@@ -1,1 +1,0 @@
-# StackoverflowApp.Umbrella

@@ -1,3 +1,0 @@
-# StackoverflowApp
-
-**TODO: Add description**
