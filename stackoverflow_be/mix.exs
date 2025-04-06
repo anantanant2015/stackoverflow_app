@@ -60,7 +60,8 @@ defmodule StackoverflowBe.MixProject do
       {:bandit, "~> 1.5"},
       {:cors_plug, "~> 3.0"},
       {:httpoison, "~> 1.8"},
-      {:jason, "~> 1.2"}
+      {:jason, "~> 1.2"},
+      {:openai, "~> 0.2.0"}
     ]
   end
 
