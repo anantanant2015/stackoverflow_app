@@ -59,7 +59,8 @@ defmodule StackoverflowBe.MixProject do
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.5"},
       {:httpoison, "~> 1.8"},
-      {:jason, "~> 1.2"}
+      {:jason, "~> 1.2"},
+      {:openai, "~> 0.2.0"}
     ]
   end
 
