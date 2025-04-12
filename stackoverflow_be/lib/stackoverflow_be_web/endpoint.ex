@@ -11,9 +11,15 @@ defmodule StackoverflowBeWeb.Endpoint do
     same_site: "Lax"
   ]
 
+  @domain_url System.get_env("DOMAIN_URL")
+
   socket "/live", Phoenix.LiveView.Socket,
     websocket: [connect_info: [session: @session_options]],
     longpoll: [connect_info: [session: @session_options]]
+
+  plug CORSPlug, origin: [
+    @domain_url
+  ]
 
   # Serve at "/" the static files from "priv/static" directory.
   #

@@ -19,3 +19,12 @@ config :logger, level: :info
 
 # Runtime production configuration, including reading
 # of environment variables, is done on config/runtime.exs.
+
+config :stackoverflow_be, YourAppWeb.Endpoint,
+  url: [host: System.get_env("DOMAIN_NAME"), port: 443], # update your domain here
+  https: [
+    port: 443,
+    cipher_suite: :strong,
+    keyfile: System.get_env("SSL_KEY_PATH"),
+    certfile: System.get_env("SSL_CERT_PATH")
+  ]
