@@ -1,0 +1,37 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: prod_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./stackoverflow_be
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      MIX_ENV: prod
+      DATABASE_URL: ecto://postgres:postgres@db/prod_db
+      SECRET_KEY_BASE: your_prod_secret
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./stackoverflow_fe
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  db_data:
