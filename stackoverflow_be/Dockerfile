@@ -1,41 +1,37 @@
-# ---- Build Stage ----
-  FROM hexpm/elixir:1.18.3-erlang-26.2.2-ubuntu-jammy-20240109 as build
+# Use working Elixir image
+FROM hexpm/elixir:1.18.3-erlang-26.2.2-ubuntu-jammy AS build
 
-  RUN apt-get update && \
-      apt-get install -y build-essential git curl npm && \
-      mix local.hex --force && \
-      mix local.rebar --force
+# Install necessary packages
+RUN apt-get update && \
+    apt-get install -y build-essential git curl npm && \
+    mix local.hex --force && \
+    mix local.rebar --force
 
-  WORKDIR /app
+# Set workdir
+WORKDIR /app
+ENV MIX_ENV=prod
 
-  ENV MIX_ENV=prod
+# Copy files and compile
+COPY mix.exs mix.lock ./
+COPY config ./config
+RUN mix deps.get --only prod && mix deps.compile
 
-  COPY mix.exs mix.lock ./
-  COPY config config
-  RUN mix deps.get --only prod
-  RUN mix deps.compile
+COPY assets ./assets
+WORKDIR /app/assets
+RUN npm install && npm run deploy
 
-  COPY assets assets
-  RUN cd assets && npm install && npm run deploy
-  RUN mix phx.digest
+WORKDIR /app
+COPY lib ./lib
+COPY priv ./priv
+RUN mix phx.digest
+RUN mix compile && mix release
 
-  COPY lib lib
-  COPY priv priv
-  RUN mix compile
+# Release stage
+FROM debian:bullseye-slim AS app
+RUN apt-get update && apt-get install -y openssl libncurses5 locales && rm -rf /var/lib/apt/lists/*
+ENV LANG=C.UTF-8
 
-  RUN mix release
-
-  # ---- Release Stage ----
-  FROM debian:bullseye-slim AS app
-
-  RUN apt-get update && apt-get install -y openssl libncurses5 locales && rm -rf /var/lib/apt/lists/*
-  ENV LANG=C.UTF-8
-
-  WORKDIR /app
-  COPY --from=build /app/_build/prod/rel/stackoverflow_be ./
-
-  ENV REPLACE_OS_VARS=true \
-      PHX_SERVER=true \
-      MIX_ENV=prod
-
-  CMD ["bin/stackoverflow_be", "start"]
+WORKDIR /app
+COPY --from=build /app/_build/prod/rel/YOUR_APP_NAME ./
+ENV REPLACE_OS_VARS=true PHX_SERVER=true MIX_ENV=prod
+CMD ["bin/YOUR_APP_NAME", "start"]
