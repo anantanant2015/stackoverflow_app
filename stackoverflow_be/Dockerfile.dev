@@ -1,16 +1,36 @@
-FROM hexpm/elixir:1.18.3-erlang-26.2.2-ubuntu-jammy-20240109
+FROM cimg/elixir:1.18.2-erlang-26.2.1-node
 
-# Install Node.js and dependencies
-RUN apt-get update && \
-    apt-get install -y build-essential git curl npm && \
-    mix local.hex --force && \
+# Switch to root to install system dependencies
+USER root
+
+RUN apt-get update && apt-get install -y \
+  build-essential \
+  inotify-tools \
+  git \
+  curl \
+  postgresql-client \
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Switch back to the default non-root user (circleci)
+USER circleci
+
+# Rest of your Dockerfile remains the same...
+WORKDIR /app
+
+ENV MIX_ENV=dev
+
+RUN mix local.hex --force && \
     mix local.rebar --force
 
-WORKDIR /app
+COPY mix.exs mix.lock ./
+COPY config config
+RUN mix deps.get
 
-# Install JS deps
-WORKDIR /app/assets
-RUN npm install
+# COPY assets/package.json assets/package-lock.json ./assets/
+# RUN cd assets && npm install
 
-# Default back to project root
-WORKDIR /app
+COPY . .
+
+EXPOSE 4000
+
+CMD ["mix", "phx.server"]
