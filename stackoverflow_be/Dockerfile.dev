@@ -22,6 +22,9 @@ ENV MIX_ENV=dev
 RUN mix local.hex --force && \
     mix local.rebar --force
 
+# 🛠 Create _build and deps to avoid permission errors
+RUN mkdir -p /app/_build /app/deps
+
 COPY mix.exs mix.lock ./
 COPY config config
 RUN mix deps.get
