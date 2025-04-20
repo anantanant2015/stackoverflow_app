@@ -1,10 +1,11 @@
 services:
   db:
     image: postgres:15
+    container_name: db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: dev_db
+      POSTGRES_DB: stackoverflow_be_dev
     volumes:
       - db_data:/var/lib/postgresql/data
     networks:
@@ -18,13 +19,17 @@ services:
       dockerfile: Dockerfile.dev
     environment:
       MIX_ENV: dev
-      DATABASE_URL: ecto://postgres:postgres@db/dev_db
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: db
+      DB_NAME: stackoverflow_be_dev
+      DB_PORT: "5432"
     volumes:
       - ./stackoverflow_be:/app
       - deps:/app/deps
       - _build:/app/_build
       - node_modules_be:/app/assets/node_modules
-    command: sh -c "mix deps.get && mix ecto.setup && mix phx.server"
+    command: sh -c "mix ecto.setup || true && mix phx.server"
     depends_on:
       - db
     ports:
@@ -35,7 +40,7 @@ services:
   frontend:
     build:
       context: ./stackoverflow_fe
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     volumes:
       - ./stackoverflow_fe:/app
       - node_modules_fe:/app/node_modules
@@ -43,6 +48,7 @@ services:
       - "3000:3000"
     environment:
       - CHOKIDAR_USEPOLLING=true
+      - HOST=0.0.0.0
     networks:
       - app_net
     depends_on:
@@ -54,6 +60,7 @@ volumes:
   _build:
   node_modules_be:
   node_modules_fe:
+
 
 networks:
   app_net:
