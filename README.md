@@ -9,6 +9,8 @@ A modern fullstack app featuring:
 - 🔐 SSL, CORS, and secure environment config
 - 🧠 Locally hosted LLM (TinyLlama via Ollama)
 - ⚙️ Unified `.env` management with interactive generator script
+- ✅ `Makefile` automation and `.env` validation
+- 🎛️ Configurable environments via `ENV=dev|prod`
 
 ---
 
@@ -18,16 +20,25 @@ A modern fullstack app featuring:
 .
 ├── stackoverflow_be/         # Phoenix backend
 │   ├── Dockerfile
+│   ├── Dockerfile.dev
 │   └── .env.production (generated)
 ├── stackoverflow_fe/         # React frontend
 │   ├── Dockerfile
+│   ├── Dockerfile.dev
 │   ├── nginx.conf
 │   └── .env.production (generated)
-├── docker-compose.yml        # Dev environment
-├── docker-compose.prod.yml   # Production deployment
-├── .github/workflows/        # GitHub Actions CI/CD
+├── docker-compose.yml        # Common base for Compose
+├── docker-compose.dev.yml    # Dev environment overrides
+├── docker-compose.prod.yml   # Production deployment overrides
 ├── .env                      # Dev environment config (generated)
-└── .env.prod                 # Production config (generated)
+├── .env.prod                 # Production config (generated)
+├── scripts/                  # Utility scripts
+│   ├── generate-env.sh       # Interactive .env generator
+│   ├── validate-env.sh       # Ensures required .env variables are present
+│   ├── docker-setup.sh       # Verifies Docker Desktop is installed and running
+│   └── start-server.sh       # Unified server starter (ENV=dev|prod)
+├── Makefile                  # Common developer commands
+└── .github/workflows/        # GitHub Actions CI/CD
 ```
 
 ---
@@ -38,13 +49,26 @@ A modern fullstack app featuring:
 
 - [Docker](https://www.docker.com/products/docker-desktop)
 - [Docker Compose](https://docs.docker.com/compose/)
+- (Optional) `make` installed
 
 ---
 
-### ▶️ Start Development Environment
+### ▶️ Start with `Makefile` (Recommended)
 
 ```bash
-docker-compose up --build
+make up                  # defaults to ENV=dev
+make up ENV=prod         # starts production stack
+```
+
+> Internally runs the env validation + script-based startup.
+
+---
+
+### ▶️ Manual Dev Setup
+
+```bash
+./scripts/generate-env.sh     # generates .env and .env.prod
+ENV=dev ./scripts/start-server.sh
 ```
 
 - Backend → http://localhost:4000
@@ -58,23 +82,27 @@ docker-compose up --build
 
 ### 1. Generate `.env` Files
 
-Run the environment file generator:
-
 ```bash
-./generate-env.sh
+./scripts/generate-env.sh
 ```
 
-This will prompt you for inputs and generate:
+This generates:
 
 - `.env` → for development
 - `.env.prod` → for production
 
-Both files include **backend + frontend** settings:
-- DB credentials, ports, LLM URL
-- Mailgun and OpenAI API keys
-- Frontend URLs and caching settings
+### 2. Validate Your Environment
 
-### 2. Environment Variables Breakdown
+```bash
+./scripts/validate-env.sh .env
+./scripts/validate-env.sh .env.prod
+```
+
+This ensures required variables are defined.
+
+---
+
+### 🔍 Environment Variables
 
 #### Backend (Phoenix):
 - `DB_USERNAME`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`, `DB_NAME`, `POOL_SIZE`, `DATABASE_URL`
@@ -89,37 +117,24 @@ Both files include **backend + frontend** settings:
 
 ## 🚀 Production Deployment
 
-### 📁 1. Environment Files
-
-Generated via script (`.env.prod`), or manually:
-
-#### `stackoverflow_be/.env.production`
-
-```env
-MIX_ENV=prod
-DATABASE_URL=ecto://postgres:postgres@db/prod_db
-SECRET_KEY_BASE=YOUR_SECRET_KEY
-SSL_CERT_PATH=/certs/fullchain.pem
-SSL_KEY_PATH=/certs/privkey.pem
-```
-
-#### `stackoverflow_fe/.env.production`
-
-```env
-REACT_APP_API_BASE_URL=https://yourdomain.com/api
-```
-
-> Generate `SECRET_KEY_BASE` with:
-> ```bash
-> mix phx.gen.secret
-> ```
-
----
-
-### 🏗️ 2. Build & Run Production
+### 1. Setup Environment
 
 ```bash
-docker-compose -f docker-compose.prod.yml up --build
+make up ENV=prod
+```
+
+Or manually:
+
+```bash
+ENV=prod ./scripts/start-server.sh
+```
+
+> Make sure `.env.prod`, `.env.production`, and Nginx certs are correctly set up.
+
+### 2. Build & Run Production Stack
+
+```bash
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --build
 ```
 
 - Frontend served via Nginx (port 80)
@@ -209,10 +224,17 @@ Deploy using **[Render](https://render.com/)**:
 
 ## 🧪 Useful Commands
 
-### Backend Release (Phoenix)
+### Run Locally
 
 ```bash
-MIX_ENV=prod mix release
+make up                      # ENV=dev by default
+make up ENV=prod
+```
+
+### Stop Services
+
+```bash
+make down                   # docker-compose down
 ```
 
 ### Phoenix Migrations
@@ -221,17 +243,24 @@ MIX_ENV=prod mix release
 docker-compose exec backend mix ecto.migrate
 ```
 
+### Backend Release (Phoenix)
+
+```bash
+MIX_ENV=prod mix release
+```
+
 ---
 
 ## ✅ What's Included
 
 - ✅ LLM reranking (local or OpenAI)
-- ✅ Unified `.env` management
+- ✅ Unified `.env` management with validation
 - ✅ Dockerized backend/frontend
+- ✅ Makefile + helper scripts
 - ✅ Secure production configs
-- ✅ Auto-restart services
 - ✅ PostgreSQL volume persistence
-- ✅ GitHub Actions-based CI/CD
+- ✅ Auto-restart services
+- ✅ GitHub Actions CI/CD
 
 ---
 
