@@ -30,6 +30,10 @@ services:
       dockerfile: Dockerfile
     ports:
       - "80:80"
+    environment:
+      REACT_APP_API_URL: ${REACT_APP_API_URL}
+      REACT_APP_SITE: ${REACT_APP_SITE}
+      REACT_APP_CACHE_EXPIRATION: ${REACT_APP_CACHE_EXPIRATION}
     depends_on:
       - backend
 
