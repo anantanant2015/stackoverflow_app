@@ -1,4 +1,4 @@
-```markdown
+
 # 🚀 Fullstack StackOverflow Clone
 
 [![Docker](https://img.shields.io/badge/docker-ready-blue?logo=docker)](https://www.docker.com/)
@@ -244,4 +244,3 @@ Fork, star ⭐, open issues, or submit PRs. Feedback is welcome!
 ## 📄 License
 
 MIT
-```
