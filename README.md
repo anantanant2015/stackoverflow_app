@@ -1,12 +1,14 @@
 
 # 🚀 Fullstack StackOverflow Clone
 
-This project includes:
+A modern fullstack app featuring:
 
 - ⚙️ Phoenix (Elixir) backend (`stackoverflow_be`)
 - 💻 React frontend (`stackoverflow_fe`)
-- 🐳 Docker/Docker Compose setup for dev and prod
-- 🔐 SSL, CORS, environment configs for production
+- 🐳 Docker/Docker Compose for development & production
+- 🔐 SSL, CORS, and secure environment config
+- 🧠 Locally hosted LLM (TinyLlama via Ollama)
+- ⚙️ Unified `.env` management with interactive generator script
 
 ---
 
@@ -16,14 +18,16 @@ This project includes:
 .
 ├── stackoverflow_be/         # Phoenix backend
 │   ├── Dockerfile
-│   └── .env.production
+│   └── .env.production (generated)
 ├── stackoverflow_fe/         # React frontend
 │   ├── Dockerfile
 │   ├── nginx.conf
-│   └── .env.production
+│   └── .env.production (generated)
 ├── docker-compose.yml        # Dev environment
 ├── docker-compose.prod.yml   # Production deployment
 ├── .github/workflows/        # GitHub Actions CI/CD
+├── .env                      # Dev environment config (generated)
+└── .env.prod                 # Production config (generated)
 ```
 
 ---
@@ -35,22 +39,59 @@ This project includes:
 - [Docker](https://www.docker.com/products/docker-desktop)
 - [Docker Compose](https://docs.docker.com/compose/)
 
-### ▶️ Start Dev Environment
+---
+
+### ▶️ Start Development Environment
 
 ```bash
 docker-compose up --build
 ```
 
-- Backend → http://localhost:4000  
-- Frontend → http://localhost:3000  
+- Backend → http://localhost:4000
+- Frontend → http://localhost:3000
 
-> Frontend proxies `/api/*` to backend.
+> Frontend proxies `/api/*` requests to backend.
+
+---
+
+## 🛠 Environment Setup
+
+### 1. Generate `.env` Files
+
+Run the environment file generator:
+
+```bash
+./generate-env.sh
+```
+
+This will prompt you for inputs and generate:
+
+- `.env` → for development
+- `.env.prod` → for production
+
+Both files include **backend + frontend** settings:
+- DB credentials, ports, LLM URL
+- Mailgun and OpenAI API keys
+- Frontend URLs and caching settings
+
+### 2. Environment Variables Breakdown
+
+#### Backend (Phoenix):
+- `DB_USERNAME`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`, `DB_NAME`, `POOL_SIZE`, `DATABASE_URL`
+- `SECRET_KEY_BASE`, `PHX_SERVER`, `PHX_HOST`, `PORT`, `SSL_KEY_PATH`, `SSL_CERT_PATH`
+- `LLM_API_URL`, `OPENAI_API_KEY`, `MAILGUN_API_KEY`, `MAILGUN_DOMAIN`
+
+#### Frontend (React):
+- `REACT_APP_API_BASE_URL`, `REACT_APP_CACHE_EXPIRATION`
+- `REACT_APP_SITE`, `REACT_APP_STACKEXCHANGE_KEY`, `REACT_APP_STACK_APP_KEY`
 
 ---
 
 ## 🚀 Production Deployment
 
 ### 📁 1. Environment Files
+
+Generated via script (`.env.prod`), or manually:
 
 #### `stackoverflow_be/.env.production`
 
@@ -65,31 +106,31 @@ SSL_KEY_PATH=/certs/privkey.pem
 #### `stackoverflow_fe/.env.production`
 
 ```env
-REACT_APP_API_URL=https://yourdomain.com/api
+REACT_APP_API_BASE_URL=https://yourdomain.com/api
 ```
 
-> Generate `SECRET_KEY_BASE` using:
+> Generate `SECRET_KEY_BASE` with:
 > ```bash
 > mix phx.gen.secret
 > ```
 
 ---
 
-### 🛠 2. Build Production Images
+### 🏗️ 2. Build & Run Production
 
 ```bash
 docker-compose -f docker-compose.prod.yml up --build
 ```
 
-- Serves React app via Nginx on port `80`
-- Phoenix API runs on port `4000`
-- PostgreSQL DB persists via Docker volume
+- Frontend served via Nginx (port 80)
+- Phoenix backend runs on port 4000
+- PostgreSQL uses Docker volume for persistence
 
 ---
 
-## 🔐 SSL & CORS
+## 🔐 SSL & CORS Setup
 
-### ✅ CORS in Phoenix (`endpoint.ex`)
+### ✅ CORS in `endpoint.ex`
 
 ```elixir
 plug CORSPlug, origin: ["http://localhost:3000", "https://yourdomain.com"]
@@ -101,10 +142,12 @@ Add to `mix.exs`:
 {:cors_plug, "~> 3.0"}
 ```
 
+---
+
 ### ✅ SSL in `config/prod.exs`
 
 ```elixir
-config :your_app, YourAppWeb.Endpoint,
+config :stackoverflow_be, StackoverflowBeWeb.Endpoint,
   url: [host: "yourdomain.com", port: 443],
   https: [
     port: 443,
@@ -118,7 +161,7 @@ config :your_app, YourAppWeb.Endpoint,
 
 ## 🌐 Nginx Config (React Frontend)
 
-Create `stackoverflow_fe/nginx.conf`:
+`stackoverflow_fe/nginx.conf`:
 
 ```nginx
 server {
@@ -147,31 +190,33 @@ server {
 
 ## 🔁 CI/CD (GitHub Actions)
 
-See `.github/workflows/deploy.yml` to:
+See `.github/workflows/deploy.yml`:
 
-- Build Docker images on push to `main`
-- Push to Docker Hub (credentials via GitHub Secrets)
+- ✅ Build Docker images on push to `main`
+- ✅ Push to Docker Hub (with GitHub Secrets)
 
 ---
 
 ## 🌍 Free Deployment Suggestion
 
-Use **[Render](https://render.com/)**:
+Deploy using **[Render](https://render.com/)**:
 
-- Backend → Web Service (Docker)
-- Frontend → Static Site
-- Database → PostgreSQL (Render Add-on)
+- Backend → Docker Web Service
+- Frontend → Static Site + Nginx
+- PostgreSQL → Render Add-on or Docker
 
 ---
 
 ## 🧪 Useful Commands
 
-### Generate a Release (Backend)
+### Backend Release (Phoenix)
+
 ```bash
 MIX_ENV=prod mix release
 ```
 
 ### Phoenix Migrations
+
 ```bash
 docker-compose exec backend mix ecto.migrate
 ```
@@ -180,16 +225,19 @@ docker-compose exec backend mix ecto.migrate
 
 ## ✅ What's Included
 
-- ✅ Clean Docker images
+- ✅ LLM reranking (local or OpenAI)
+- ✅ Unified `.env` management
+- ✅ Dockerized backend/frontend
 - ✅ Secure production configs
-- ✅ Auto-retry services with `depends_on`
-- ✅ Volume-based DB persistence
+- ✅ Auto-restart services
+- ✅ PostgreSQL volume persistence
+- ✅ GitHub Actions-based CI/CD
 
 ---
 
 ## 🙌 Contributing
 
-Feel free to fork, improve, and PR! For major changes, open an issue to discuss your proposal.
+Feel free to fork, open issues, and submit PRs! Contributions and feedback are always welcome.
 
 ---
 
