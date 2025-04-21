@@ -1,8 +1,8 @@
 #!/bin/bash
 
+# Usage:
 # chmod +x scripts/validate_env.sh
-# ./scripts/validate_env.sh .env.dev
-
+# ./scripts/validate_env.sh .env
 
 ENV_FILE=$1
 
@@ -12,18 +12,33 @@ if [ ! -f "$ENV_FILE" ]; then
 fi
 
 REQUIRED_VARS=(
+  # Backend essentials
   DB_USERNAME
   DB_PASSWORD
   DB_HOST
-  DB_NAME
   DB_PORT
-  SECRET_KEY_BASE
-  MIX_ENV
+  DB_NAME
   DATABASE_URL
+  SECRET_KEY_BASE
+  PHX_SERVER
+  PHX_HOST
+  PORT
+  ENVIRONMENT
+  APP_NAME
+
+  # SSL (recommended for prod)
+  SSL_KEY_PATH
+  SSL_CERT_PATH
+
+  # Frontend essentials
   REACT_APP_API_URL
+  REACT_APP_SITE
+  REACT_APP_CACHE_EXPIRATION
 )
 
 echo "🔍 Validating $ENV_FILE..."
+MISSING=false
+
 for VAR in "${REQUIRED_VARS[@]}"; do
   if ! grep -q "^$VAR=" "$ENV_FILE"; then
     echo "❌ Missing: $VAR"
@@ -32,7 +47,8 @@ for VAR in "${REQUIRED_VARS[@]}"; do
 done
 
 if [ "$MISSING" = true ]; then
-  echo "❌ Validation failed."
+  echo ""
+  echo "❌ Validation failed for $ENV_FILE."
   exit 1
 else
   echo "✅ $ENV_FILE looks good!"

@@ -28,13 +28,18 @@ up:
 		echo "❌ Env validation failed. Fix issues before continuing."; \
 		exit 1; \
 	fi
+	@make generate-certs
 	@./scripts/start-server.sh
+
 
 validate:
 	@./scripts/validate_env.sh $(ENV_FILE)
 
 generate-env:
 	@./scripts/generate_env_files.sh
+
+generate-certs:
+	@./scripts/generate_certs.sh
 
 docker-check:
 	@./scripts/docker-setup.sh

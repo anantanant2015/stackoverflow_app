@@ -19,25 +19,19 @@ A modern fullstack app featuring:
 ```
 .
 ├── stackoverflow_be/         # Phoenix backend
-│   ├── Dockerfile
-│   ├── Dockerfile.dev
-│   └── .env.production (generated)
 ├── stackoverflow_fe/         # React frontend
-│   ├── Dockerfile
-│   ├── Dockerfile.dev
-│   ├── nginx.conf
-│   └── .env.production (generated)
 ├── docker-compose.yml        # Common base for Compose
 ├── docker-compose.dev.yml    # Dev environment overrides
 ├── docker-compose.prod.yml   # Production deployment overrides
 ├── .env                      # Dev environment config (generated)
 ├── .env.prod                 # Production config (generated)
-├── scripts/                  # Utility scripts
-│   ├── generate-env.sh       # Interactive .env generator
-│   ├── validate-env.sh       # Ensures required .env variables are present
-│   ├── docker-setup.sh       # Verifies Docker Desktop is installed and running
-│   └── start-server.sh       # Unified server starter (ENV=dev|prod)
-├── Makefile                  # Common developer commands
+├── scripts/                  # Utility scripts (optional)
+│   ├── generate-env.sh       # Generates .env files
+│   ├── validate-env.sh       # Validates env files
+│   ├── docker-setup.sh       # Verifies Docker Desktop is running
+│   ├── start-server.sh       # Starts server (ENV=dev|prod)
+│   └── generate-certs.sh     # Generates local SSL certs
+├── Makefile                  # Primary command interface
 └── .github/workflows/        # GitHub Actions CI/CD
 ```
 
@@ -53,99 +47,61 @@ A modern fullstack app featuring:
 
 ---
 
-### ▶️ Start with `Makefile` (Recommended)
+## 🚀 Primary Touchpoint: `Makefile`
+
+The `Makefile` is the **recommended way** to work with this project. It manages all setup and environment switching for you.
+
+### ▶️ Start the Project
 
 ```bash
-make up                  # defaults to ENV=dev
-make up ENV=prod         # starts production stack
+make up                    # Starts the dev environment (ENV=dev by default)
+make up ENV=prod           # Starts the production environment
 ```
 
-> Internally runs the env validation + script-based startup.
+These commands handle:
+- Environment variable validation
+- Script execution
+- Docker Compose orchestration
+
+> ✅ Always run from the **project root**.
 
 ---
 
-### ▶️ Manual Dev Setup
+## ⚙️ Optional Manual Setup
 
-```bash
-./scripts/generate-env.sh     # generates .env and .env.prod
-ENV=dev ./scripts/start-server.sh
-```
+You can also run individual scripts directly from the root directory:
 
-- Backend → http://localhost:4000
-- Frontend → http://localhost:3000
-
-> Frontend proxies `/api/*` requests to backend.
-
----
-
-## 🛠 Environment Setup
-
-### 1. Generate `.env` Files
+### 1. Generate Environment Files
 
 ```bash
 ./scripts/generate-env.sh
 ```
 
-This generates:
+This creates:
+- `.env` for development
+- `.env.prod` for production
 
-- `.env` → for development
-- `.env.prod` → for production
-
-### 2. Validate Your Environment
+### 2. Validate Environment Files
 
 ```bash
 ./scripts/validate-env.sh .env
 ./scripts/validate-env.sh .env.prod
 ```
 
-This ensures required variables are defined.
-
----
-
-### 🔍 Environment Variables
-
-#### Backend (Phoenix):
-- `DB_USERNAME`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`, `DB_NAME`, `POOL_SIZE`, `DATABASE_URL`
-- `SECRET_KEY_BASE`, `PHX_SERVER`, `PHX_HOST`, `PORT`, `SSL_KEY_PATH`, `SSL_CERT_PATH`
-- `LLM_API_URL`, `OPENAI_API_KEY`, `MAILGUN_API_KEY`, `MAILGUN_DOMAIN`
-
-#### Frontend (React):
-- `REACT_APP_API_BASE_URL`, `REACT_APP_CACHE_EXPIRATION`
-- `REACT_APP_SITE`, `REACT_APP_STACKEXCHANGE_KEY`, `REACT_APP_STACK_APP_KEY`
-
----
-
-## 🚀 Production Deployment
-
-### 1. Setup Environment
+### 3. Start Server (Manually)
 
 ```bash
-make up ENV=prod
-```
-
-Or manually:
-
-```bash
+ENV=dev ./scripts/start-server.sh
 ENV=prod ./scripts/start-server.sh
 ```
 
-> Make sure `.env.prod`, `.env.production`, and Nginx certs are correctly set up.
-
-### 2. Build & Run Production Stack
-
-```bash
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --build
-```
-
-- Frontend served via Nginx (port 80)
-- Phoenix backend runs on port 4000
-- PostgreSQL uses Docker volume for persistence
+> ⚠️ All scripts are designed to be run from the **root**, not from inside the `scripts/` folder.
 
 ---
 
-## 🔐 SSL & CORS Setup
+## 🔐 SSL & CORS Configuration
 
-### ✅ CORS in `endpoint.ex`
+### ✅ CORS (in `endpoint.ex`)
 
 ```elixir
 plug CORSPlug, origin: ["http://localhost:3000", "https://yourdomain.com"]
@@ -159,7 +115,7 @@ Add to `mix.exs`:
 
 ---
 
-### ✅ SSL in `config/prod.exs`
+### ✅ SSL Setup (in `config/prod.exs`)
 
 ```elixir
 config :stackoverflow_be, StackoverflowBeWeb.Endpoint,
@@ -174,7 +130,22 @@ config :stackoverflow_be, StackoverflowBeWeb.Endpoint,
 
 ---
 
-## 🌐 Nginx Config (React Frontend)
+### 🧪 Generate SSL Certs for Local Dev
+
+```bash
+make generate-certs
+```
+
+Update `.env`:
+
+```env
+SSL_CERT_PATH=certs/cert.pem
+SSL_KEY_PATH=certs/key.pem
+```
+
+---
+
+## 🌐 Frontend Proxy (Nginx Config)
 
 `stackoverflow_fe/nginx.conf`:
 
@@ -203,70 +174,58 @@ server {
 
 ---
 
-## 🔁 CI/CD (GitHub Actions)
+## 🔁 CI/CD via GitHub Actions
 
 See `.github/workflows/deploy.yml`:
 
-- ✅ Build Docker images on push to `main`
-- ✅ Push to Docker Hub (with GitHub Secrets)
+- ✅ Builds Docker images on push to `main`
+- ✅ Pushes to Docker Hub (via GitHub Secrets)
 
 ---
 
-## 🌍 Free Deployment Suggestion
+## 🌍 Suggested Free Deployment
 
 Deploy using **[Render](https://render.com/)**:
 
 - Backend → Docker Web Service
 - Frontend → Static Site + Nginx
-- PostgreSQL → Render Add-on or Docker
+- PostgreSQL → Render Add-on or Docker volume
 
 ---
 
-## 🧪 Useful Commands
-
-### Run Locally
+## 💡 Useful Developer Commands
 
 ```bash
-make up                      # ENV=dev by default
-make up ENV=prod
+make up                     # Start stack (default ENV=dev)
+make up ENV=prod            # Start production stack
+make down                   # Stop all services
+docker-compose ps           # Check status
 ```
 
-### Stop Services
-
-```bash
-make down                   # docker-compose down
-```
-
-### Phoenix Migrations
+### Migrations
 
 ```bash
 docker-compose exec backend mix ecto.migrate
 ```
 
-### Backend Release (Phoenix)
-
-```bash
-MIX_ENV=prod mix release
-```
-
 ---
 
-## ✅ What's Included
+## ✅ Features Recap
 
-- ✅ LLM reranking (local or OpenAI)
-- ✅ Unified `.env` management with validation
-- ✅ Dockerized backend/frontend
-- ✅ Makefile + helper scripts
-- ✅ Secure production configs
-- ✅ PostgreSQL volume persistence
-- ✅ Auto-restart services
-- ✅ GitHub Actions CI/CD
+- ✅ Phoenix + React fullstack architecture
+- ✅ Dockerized environments (dev/prod)
+- ✅ `.env` generation and validation
+- ✅ SSL and CORS support
+- ✅ Local and OpenAI-powered LLM reranking
+- ✅ PostgreSQL with Docker volume
+- ✅ CI/CD with GitHub Actions
+- ✅ One-command `Makefile` control
 
 ---
 
 ## 🙌 Contributing
 
-Feel free to fork, open issues, and submit PRs! Contributions and feedback are always welcome.
+Fork, star ⭐, open issues, or submit PRs! Contributions and feedback are welcome.
 
 ---
 

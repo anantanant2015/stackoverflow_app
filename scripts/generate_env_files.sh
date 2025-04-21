@@ -19,8 +19,8 @@ ENV_VARS=(
   "PHX_HOST|Domain or host (e.g., localhost or yourdomain.com)|localhost|yourdomain.com"
   "PORT|Phoenix port|4000|4000"
   "DNS_CLUSTER_QUERY|Clustering DNS query (optional)||"
-  "SSL_KEY_PATH|Path to SSL key file (optional)||"
-  "SSL_CERT_PATH|Path to SSL cert file (optional)||"
+  "SSL_KEY_PATH|Path to SSL key file (optional)||/etc/ssl/certs/key.pem"
+  "SSL_CERT_PATH|Path to SSL cert file (optional)||/etc/ssl/certs/cert.pem"
   "OPENAI_API_KEY|OpenAI API Key (optional)||"
   "LLM_API_URL|LLM service URL|http://llm:11434/api/generate|http://llm:11434/api/generate"
   "MAILGUN_API_KEY|Mailgun API Key (optional)||"
@@ -80,6 +80,13 @@ create_env_file() {
   echo "APP_NAME=stackoverflow_clone" >> "$file_name"
 
   echo "✅ $file_name created."
+
+  if [[ $env_type == "prod" ]]; then
+    echo ""
+    echo "📢 Reminder: Make sure your SSL cert files exist at:"
+    echo "   🔒 SSL_KEY_PATH: /etc/ssl/certs/key.pem"
+    echo "   📄 SSL_CERT_PATH: /etc/ssl/certs/cert.pem"
+  fi
 }
 
 # Generate both .env (unified) for dev and prod
