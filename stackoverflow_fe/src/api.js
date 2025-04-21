@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const API_BASE_URL = process.env.REACT_APP_API_URL;
 const SITE = process.env.REACT_APP_SITE;
 const CACHE_EXPIRATION = parseInt(process.env.REACT_APP_CACHE_EXPIRATION, 10) || 720 * 60 * 1000; // Cache expiry time: 120 minutes
 
