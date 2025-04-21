@@ -2,76 +2,66 @@ name: CI Pipeline
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
-  setup:
+  test:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-  install_dependencies:
-    runs-on: ubuntu-latest
-    needs: setup
-    steps:
-      - name: Set up Elixir
-        uses: erlef/setup-elixir@v1.0.0      # Changed version from v2 to v1.0.0
-        with:
-          otp-version: '27.0'            # Set OTP version to 27
-          elixir-version: '1.18.3'       # Set Elixir version to 1.18.3
+      - name: Set up asdf
+        uses: asdf-vm/actions/setup@v2
+
+      - name: Install Erlang and Elixir
+        run: |
+          asdf plugin add erlang || true
+          asdf plugin add elixir || true
+          asdf install erlang 27.0
+          asdf install elixir 1.18.3
+          asdf global erlang 27.0
+          asdf global elixir 1.18.3
+          mix local.hex --force
+          mix local.rebar --force
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: 16
 
-      - name: Install Phoenix dependencies
-        run: |
-          mix deps.get
-          npm install --prefix ./frontend
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix-
 
-      - name: Install NPM dependencies (React)
+      - name: Install backend dependencies
+        run: mix deps.get
+
+      - name: Install frontend dependencies
         run: npm install --prefix ./frontend
 
-  run_backend_tests:
-    runs-on: ubuntu-latest
-    needs: install_dependencies
-    steps:
       - name: Run backend tests
         run: mix test
 
-  run_frontend_tests:
-    runs-on: ubuntu-latest
-    needs: install_dependencies
-    steps:
       - name: Run frontend tests
         run: npm run test --prefix ./frontend
 
-  build:
-    runs-on: ubuntu-latest
-    needs: [run_backend_tests, run_frontend_tests]
-    steps:
       - name: Build Docker images
-        run: |
-          docker-compose -f docker-compose.prod.yml build
+        run: docker-compose -f docker-compose.prod.yml build
 
-  notify_success:
-    runs-on: ubuntu-latest
-    needs: build
-    if: success()
-    steps:
-      - name: Notify Build Success
-        run: echo "CI Build and Tests succeeded!"
+      - name: Notify Success
+        if: success()
+        run: echo "✅ CI Build and Tests succeeded!"
 
-  notify_failure:
-    runs-on: ubuntu-latest
-    needs: build
-    if: failure()
-    steps:
-      - name: Notify Build Failure
-        run: echo "CI Build or Tests failed."
+      - name: Notify Failure
+        if: failure()
+        run: echo "❌ CI Build or Tests failed."
