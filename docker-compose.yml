@@ -54,12 +54,28 @@ services:
     depends_on:
       - backend
 
+  llm:
+    build:
+      context: ./llm
+      dockerfile: Dockerfile.ollama
+    container_name: local_llm
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    networks:
+      - app_net
+    env_file:
+      - .env
+
+
 volumes:
   db_data:
   deps:
   _build:
   node_modules_be:
   node_modules_fe:
+  ollama_models:
 
 
 networks:
