@@ -1,16 +1,31 @@
-
+```markdown
 # 🚀 Fullstack StackOverflow Clone
 
-A modern fullstack app featuring:
+[![Docker](https://img.shields.io/badge/docker-ready-blue?logo=docker)](https://www.docker.com/)
+[![Phoenix](https://img.shields.io/badge/phoenix-1.7.10-red?logo=elixir)](https://www.phoenixframework.org/)
+[![React](https://img.shields.io/badge/react-frontend-61DAFB?logo=react)](https://react.dev/)
+[![PostgreSQL](https://img.shields.io/badge/postgresql-database-336791?logo=postgresql)](https://www.postgresql.org/)
+[![OpenAI](https://img.shields.io/badge/OpenAI-API-black?logo=openai)](https://openai.com/)
+[![Ollama](https://img.shields.io/badge/Ollama-LLM-4B5563?logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTIiIGZpbGw9IiM0QjU1NjMiLz48L3N2Zz4=)
+[![CI/CD](https://img.shields.io/github/actions/workflow/status/your-org/your-repo/deploy.yml?label=ci%2Fcd&logo=github)](./.github/workflows/deploy.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 
-- ⚙️ Phoenix (Elixir) backend (`stackoverflow_be`)
-- 💻 React frontend (`stackoverflow_fe`)
-- 🐳 Docker/Docker Compose for development & production
-- 🔐 SSL, CORS, and secure environment config
-- 🧠 Locally hosted LLM (TinyLlama via Ollama)
-- ⚙️ Unified `.env` management with interactive generator script
-- ✅ `Makefile` automation and `.env` validation
-- 🎛️ Configurable environments via `ENV=dev|prod`
+---
+
+## 📚 Table of Contents
+
+- [📦 Project Structure](#-project-structure)
+- [⚙️ Development Setup](#️-development-setup)
+- [🚀 Using the Makefile](#-using-the-makefile)
+- [⚙️ Optional Manual Script Usage](#️-optional-manual-script-usage)
+- [🔐 SSL & CORS Configuration](#-ssl--cors-configuration)
+- [🌐 Frontend Proxy (Nginx Config)](#-frontend-proxy-nginx-config)
+- [🔁 CI/CD via GitHub Actions](#-cicd-via-github-actions)
+- [🌍 Suggested Free Deployment](#-suggested-free-deployment)
+- [💡 Useful Developer Commands](#-useful-developer-commands)
+- [✅ Features Recap](#-features-recap)
+- [🙌 Contributing](#-contributing)
+- [📄 License](#-license)
 
 ---
 
@@ -25,13 +40,12 @@ A modern fullstack app featuring:
 ├── docker-compose.prod.yml   # Production deployment overrides
 ├── .env                      # Dev environment config (generated)
 ├── .env.prod                 # Production config (generated)
-├── scripts/                  # Utility scripts (optional)
+├── scripts/                  # Utility scripts
 │   ├── generate-env.sh       # Generates .env files
 │   ├── validate-env.sh       # Validates env files
 │   ├── docker-setup.sh       # Verifies Docker Desktop is running
 │   ├── start-server.sh       # Starts server (ENV=dev|prod)
-│   └── generate-certs.sh     # Generates local SSL certs
-├── Makefile                  # Primary command interface
+│   └── Makefile              # Primary command interface
 └── .github/workflows/        # GitHub Actions CI/CD
 ```
 
@@ -47,31 +61,31 @@ A modern fullstack app featuring:
 
 ---
 
-## 🚀 Primary Touchpoint: `Makefile`
+## 🚀 Using the Makefile
 
-The `Makefile` is the **recommended way** to work with this project. It manages all setup and environment switching for you.
+The `Makefile` is the **recommended way** to work with this project. It manages setup, validation, and environment control.
 
 ### ▶️ Start the Project
 
 ```bash
-make up                    # Starts the dev environment (ENV=dev by default)
-make up ENV=prod           # Starts the production environment
+make -f scripts/Makefile up                # Starts the dev environment (ENV=dev by default)
+make -f scripts/Makefile up ENV=prod       # Starts the production environment
 ```
 
 These commands handle:
-- Environment variable validation
-- Script execution
-- Docker Compose orchestration
+- Environment validation
+- Script orchestration
+- Docker Compose logic
 
-> ✅ Always run from the **project root**.
+> ✅ Always run from the **project root**, using `-f scripts/Makefile`.
 
 ---
 
-## ⚙️ Optional Manual Setup
+## ⚙️ Optional Manual Script Usage
 
-You can also run individual scripts directly from the root directory:
+You can run scripts directly from the root:
 
-### 1. Generate Environment Files
+### 1. Generate `.env` Files
 
 ```bash
 ./scripts/generate-env.sh
@@ -81,27 +95,27 @@ This creates:
 - `.env` for development
 - `.env.prod` for production
 
-### 2. Validate Environment Files
+### 2. Validate `.env` Files
 
 ```bash
 ./scripts/validate-env.sh .env
 ./scripts/validate-env.sh .env.prod
 ```
 
-### 3. Start Server (Manually)
+### 3. Start Server Manually
 
 ```bash
 ENV=dev ./scripts/start-server.sh
 ENV=prod ./scripts/start-server.sh
 ```
 
-> ⚠️ All scripts are designed to be run from the **root**, not from inside the `scripts/` folder.
+> ⚠️ Scripts must be run from the **project root**.
 
 ---
 
 ## 🔐 SSL & CORS Configuration
 
-### ✅ CORS (in `endpoint.ex`)
+### ✅ CORS (`endpoint.ex`)
 
 ```elixir
 plug CORSPlug, origin: ["http://localhost:3000", "https://yourdomain.com"]
@@ -115,7 +129,7 @@ Add to `mix.exs`:
 
 ---
 
-### ✅ SSL Setup (in `config/prod.exs`)
+### ✅ SSL Setup (`config/prod.exs`)
 
 ```elixir
 config :stackoverflow_be, StackoverflowBeWeb.Endpoint,
@@ -128,15 +142,13 @@ config :stackoverflow_be, StackoverflowBeWeb.Endpoint,
   ]
 ```
 
----
-
-### 🧪 Generate SSL Certs for Local Dev
+### 🧪 Generate SSL for Local Dev
 
 ```bash
-make generate-certs
+make -f scripts/Makefile generate-certs
 ```
 
-Update `.env`:
+Then update `.env`:
 
 ```env
 SSL_CERT_PATH=certs/cert.pem
@@ -178,28 +190,28 @@ server {
 
 See `.github/workflows/deploy.yml`:
 
-- ✅ Builds Docker images on push to `main`
-- ✅ Pushes to Docker Hub (via GitHub Secrets)
+- ✅ Docker build and push on `main`
+- ✅ Deploys via secrets and auto-hooks
 
 ---
 
 ## 🌍 Suggested Free Deployment
 
-Deploy using **[Render](https://render.com/)**:
+Use [Render](https://render.com/):
 
 - Backend → Docker Web Service
 - Frontend → Static Site + Nginx
-- PostgreSQL → Render Add-on or Docker volume
+- DB → Render PostgreSQL or Docker volume
 
 ---
 
 ## 💡 Useful Developer Commands
 
 ```bash
-make up                     # Start stack (default ENV=dev)
-make up ENV=prod            # Start production stack
-make down                   # Stop all services
-docker-compose ps           # Check status
+make -f scripts/Makefile up                 # Start stack (default ENV=dev)
+make -f scripts/Makefile up ENV=prod        # Start production stack
+make -f scripts/Makefile down               # Stop services
+docker-compose ps                           # Check status
 ```
 
 ### Migrations
@@ -216,19 +228,20 @@ docker-compose exec backend mix ecto.migrate
 - ✅ Dockerized environments (dev/prod)
 - ✅ `.env` generation and validation
 - ✅ SSL and CORS support
-- ✅ Local and OpenAI-powered LLM reranking
-- ✅ PostgreSQL with Docker volume
-- ✅ CI/CD with GitHub Actions
-- ✅ One-command `Makefile` control
+- ✅ LLM reranking via OpenAI or local Ollama
+- ✅ PostgreSQL database
+- ✅ GitHub CI/CD
+- ✅ One-command setup with `Makefile`
 
 ---
 
 ## 🙌 Contributing
 
-Fork, star ⭐, open issues, or submit PRs! Contributions and feedback are welcome.
+Fork, star ⭐, open issues, or submit PRs. Feedback is welcome!
 
 ---
 
 ## 📄 License
 
 MIT
+```
