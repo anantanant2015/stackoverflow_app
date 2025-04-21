@@ -22,8 +22,8 @@ jobs:
       - name: Set up Elixir
         uses: erlef/setup-elixir@v2
         with:
-          otp-version: '24.0'
-          elixir-version: '1.14.0'
+          otp-version: '27.0'            # Set OTP version to 27
+          elixir-version: '1.18.3'       # Set Elixir version to 1.18.3
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
