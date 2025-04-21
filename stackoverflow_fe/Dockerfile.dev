@@ -1,14 +1,22 @@
-# Dockerfile.dev for CRA
-FROM node:18
+FROM node:20-alpine
+
+# Install dependencies for file watching and shells
+RUN apk add --no-cache libc6-compat bash
 
 WORKDIR /app
 
-COPY package*.json ./
+# Install dependencies first (layer caching)
+COPY package.json package-lock.json* ./
 RUN npm install
 
+# Copy the app source
 COPY . .
 
-ENV HOST=0.0.0.0
+# Set environment to development
+ENV NODE_ENV=development
+
+# CRA listens on port 3000 by default
 EXPOSE 3000
 
+# Start dev server with host binding (important for Docker)
 CMD ["npm", "start"]

@@ -17,6 +17,7 @@ USER circleci
 # Rest of your Dockerfile remains the same...
 WORKDIR /app
 
+# Set environment
 ENV MIX_ENV=dev
 
 RUN mix local.hex --force && \
@@ -25,6 +26,7 @@ RUN mix local.hex --force && \
 # 🛠 Create _build and deps to avoid permission errors
 RUN mkdir -p /app/_build /app/deps
 
+# Install Elixir deps
 COPY mix.exs mix.lock ./
 COPY config config
 RUN mix deps.get
@@ -34,6 +36,14 @@ RUN mix deps.get
 
 COPY . .
 
+# Install JS deps
+WORKDIR /app/assets
+RUN npm install
+
+WORKDIR /app
+
+# Expose port
 EXPOSE 4000
 
+# Start Phoenix server with code reload
 CMD ["mix", "phx.server"]
