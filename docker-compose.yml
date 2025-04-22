@@ -1,94 +1,85 @@
 services:
   db:
     image: postgres:15
-    restart: always
-    env_file:
-      - .env
+    container_name: db
     environment:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
       - db_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    networks:
+      - app_net
+    ports:
+      - "5433:5432"
 
 
   backend:
     build:
       context: ./stackoverflow_be
       dockerfile: Dockerfile.dev
+    restart: always
     ports:
       - "4000:4000"
     volumes:
       - ./stackoverflow_be:/app
       - deps:/app/deps
-      - build:/app/_build
-    env_file:
-      - .env
-    environment:
-      MIX_ENV: dev
-      DATABASE_URL: ${DATABASE_URL}
-      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
-      LLM_API_URL: ${LLM_API_URL}
-      SSL_KEY_PATH: ${SSL_KEY_PATH}
-      SSL_CERT_PATH: ${SSL_CERT_PATH}
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
-      MAILGUN_API_KEY: ${MAILGUN_API_KEY}
-      MAILGUN_DOMAIN: ${MAILGUN_DOMAIN}
-      PHX_SERVER: ${PHX_SERVER}
-      PHX_HOST: ${PHX_HOST}
-      PORT: ${PORT}
+      - _build:/app/_build
+      - node_modules_be:/app/assets/node_modules
+    command: sh -c "mix ecto.setup || true && mix phx.server"
     depends_on:
-      llm:
-        condition: service_healthy
-      db:
-        condition: service_healthy
-
+      - db
+    networks:
+      - app_net
   frontend:
     build:
       context: ./stackoverflow_fe
       dockerfile: Dockerfile.dev
+    restart: always
     ports:
       - "3000:3000"
     volumes:
       - ./stackoverflow_fe:/app
-      - /app/node_modules
-    env_file:
-      - .env
+      - node_modules_fe:/app/node_modules
     environment:
       - CHOKIDAR_USEPOLLING=true
-      - REACT_APP_API_BASE_URL=${REACT_APP_API_BASE_URL}
+      - HOST=0.0.0.0
+      - REACT_APP_API_URL=${REACT_APP_API_URL}
       - REACT_APP_SITE=${REACT_APP_SITE}
       - REACT_APP_CACHE_EXPIRATION=${REACT_APP_CACHE_EXPIRATION}
-      - REACT_APP_STACKEXCHANGE_KEY=${REACT_APP_STACKEXCHANGE_KEY}
       - REACT_APP_STACK_APP_KEY=${REACT_APP_STACK_APP_KEY}
+    networks:
+      - app_net
+    depends_on:
+      - backend
 
   llm:
-    image: ollama/ollama
+    build:
+      context: ./llm
+      dockerfile: Dockerfile.ollama
     container_name: local_llm
     ports:
       - "11434:11434"
     volumes:
       - ollama_models:/root/.ollama
-    command: >
-      sh -c "
-        /bin/ollama serve &
-        sleep 2 &&
-        ollama pull ${LLM_MODEL:-tinyllama} &&
-        tail -f /dev/null"
+    networks:
+      - app_net
+    env_file:
+      - .env
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:11434"]
+      test: ["CMD-SHELL", "curl -f http://localhost:11434 || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
 
 volumes:
   db_data:
-  ollama_models:
   deps:
-  build:
+  _build:
+  node_modules_be:
+  node_modules_fe:
+  ollama_models:
+
+networks:
+  app_net:

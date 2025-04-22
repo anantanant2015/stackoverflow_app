@@ -1,13 +1,14 @@
 #!/bin/bash
 
-# Start Ollama server in the background
-ollama serve &
+echo "Starting Ollama with model: $LLM_MODEL"
 
-# Wait briefly to ensure the server starts
-sleep 3
+# Optional cleanup of unused models
+if [ "$OLLAMA_CLEAN_UNUSED_MODELS" = "true" ]; then
+  echo "Cleaning up unused Ollama models..."
+  ollama list | awk 'NR>1 {print $1}' | while read -r model; do
+    ollama rm "$model"
+  done
+fi
 
-# Pull the model (configurable)
-ollama pull "${LLM_MODEL:-tinyllama}"
-
-# Keep container running
-tail -f /dev/null
+# Start Ollama server with the selected model
+exec ollama serve
