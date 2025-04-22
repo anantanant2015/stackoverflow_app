@@ -2,38 +2,40 @@
 
 set -e
 
-# Set environment (default to "dev" if not provided)
-ENV=${ENV:-dev}
-COMPOSE="docker-compose -f docker-compose.yml -f docker-compose.${ENV}.yml"
+# Set environment (default to "dev")
+ENV="${ENV:-dev}"
 
-echo "🚀 Starting server in '$ENV' mode using Docker Compose..."
-
-# Check if Docker Compose is available
-if ! command -v docker-compose &>/dev/null; then
-    echo "❌ Docker Compose not found. Please install Docker Compose and try again."
-    exit 1
-fi
-
-# Check if base docker-compose.yml file exists
-if [ ! -f "docker-compose.yml" ]; then
-    echo "❌ docker-compose.yml not found. Please ensure it's located in the project root directory."
-    exit 1
-fi
-
-# Check if environment-specific docker-compose.$ENV.yml file exists
-if [ ! -f "docker-compose.${ENV}.yml" ]; then
-    echo "❌ docker-compose.${ENV}.yml not found. Please create it or specify a valid ENV (e.g., dev, prod)."
-    exit 1
-fi
-
-# Run Docker Compose to start the services
-echo "📦 Running: $COMPOSE up -d"
-$COMPOSE up -d
-
-# Check result
-if [ $? -eq 0 ]; then
-    echo "✅ Server started successfully in '$ENV' mode!"
+# Compose file selection
+if [ "$ENV" = "prod" ]; then
+  COMPOSE_FILE="docker-compose.prod.yml"
+  ENV_FILE=".env.prod"
 else
-    echo "❌ Failed to start the server. Please check Docker logs for more details."
-    exit 1
+  COMPOSE_FILE="docker-compose.yml"
+  ENV_FILE=".env.dev"
 fi
+
+echo "🚀 Starting server in '$ENV' mode..."
+
+# Check required docker-compose file
+if [ ! -f "$COMPOSE_FILE" ]; then
+  echo "❌ Missing $COMPOSE_FILE. Please make sure it's in the project root."
+  exit 1
+fi
+
+# Check if docker-compose is available
+if ! command -v docker-compose >/dev/null 2>&1; then
+  echo "❌ docker-compose is not installed or not in your PATH."
+  exit 1
+fi
+
+# Use the matching env file if it exists
+if [ -f "$ENV_FILE" ]; then
+  echo "📁 Using environment variables from $ENV_FILE"
+  export $(grep -v '^#' "$ENV_FILE" | xargs)
+fi
+
+# Start services
+echo "📦 Running: docker-compose -f $COMPOSE_FILE up -d"
+docker-compose -f "$COMPOSE_FILE" up -d
+
+echo "✅ Server started successfully in '$ENV' mode!"
