@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 
-const QuestionList = ({ questions, pageSize }) => {
+const QuestionList = ({ questions = [], pageSize }) => {
   const [filters, setFilters] = useState({
     noAnswers: false,
     noAccepted: false,
@@ -28,8 +28,7 @@ const QuestionList = ({ questions, pageSize }) => {
   const [showFilter, setShowFilter] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [questionsPerPage, setQuestionsPerPage] = useState(15);
-
+  const [questionsPerPage, setQuestionsPerPage] = useState(pageSize || 15);
 
   const now = Date.now();
   const nowInSeconds = Math.floor(now / 1000);
@@ -73,18 +72,17 @@ const QuestionList = ({ questions, pageSize }) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handlePerPageChange = (value) => {
-    setQuestionsPerPage(value);
+  const handleQuestionsPerPageChange = (newPerPage) => {
+    setQuestionsPerPage(newPerPage);
     setCurrentPage(1);
   };
 
-  const handleQuestionsPerPageChange = (newPerPage) => {
-    setQuestionsPerPage(newPerPage);
-    setCurrentPage(1); // reset to page 1 after changing perPage
-  };
-
-
+  // Always call hooks unconditionally!
   const filteredAndSorted = useMemo(() => {
+    if (!Array.isArray(questions)) {
+      return [];
+    }
+
     return questions
       .filter((q) => {
         if (filters.noAnswers && q.answer_count > 0) return false;
@@ -123,6 +121,10 @@ const QuestionList = ({ questions, pageSize }) => {
       });
   }, [filters, questions, sortBy]);
 
+  if (!Array.isArray(questions)) {
+    return <Typography color="error">Invalid questions data.</Typography>;
+  }
+
   const totalPages = Math.ceil(filteredAndSorted.length / questionsPerPage);
   const currentPageQuestions = filteredAndSorted.slice(
     (currentPage - 1) * questionsPerPage,
@@ -138,14 +140,22 @@ const QuestionList = ({ questions, pageSize }) => {
       </Box>
 
       {/* Filters & Sort */}
-      <Grid container justifyContent="flex-end" spacing={0} mb={1} sx={{fontSize: '10px'}}>
-        <Grid item >
+      <Grid container justifyContent="flex-end" spacing={0} mb={1} sx={{ fontSize: '10px' }}>
+        <Grid item>
           <ToggleButtonGroup value={sortBy} exclusive onChange={handleSortChange} size="small">
-            <ToggleButton value="newest" sx={{border: 'none'}}>Newest</ToggleButton>
-            <ToggleButton value="active" sx={{border: 'none'}} >Active</ToggleButton>
-            <ToggleButton value="bountied" sx={{border: 'none'}}>Bountied</ToggleButton>
-            <ToggleButton value="unanswered" sx={{border: 'none'}} >Unanswered</ToggleButton>
-            <ToggleButton value="more" onClick={handleMenuClick} sx={{border: 'none'}}>
+            <ToggleButton value="newest" sx={{ border: 'none' }}>
+              Newest
+            </ToggleButton>
+            <ToggleButton value="active" sx={{ border: 'none' }}>
+              Active
+            </ToggleButton>
+            <ToggleButton value="bountied" sx={{ border: 'none' }}>
+              Bountied
+            </ToggleButton>
+            <ToggleButton value="unanswered" sx={{ border: 'none' }}>
+              Unanswered
+            </ToggleButton>
+            <ToggleButton value="more" onClick={handleMenuClick} sx={{ border: 'none' }}>
               <MoreVertIcon />
             </ToggleButton>
           </ToggleButtonGroup>
@@ -170,31 +180,19 @@ const QuestionList = ({ questions, pageSize }) => {
           <FormGroup row>
             <FormControlLabel
               control={
-                <Checkbox
-                  checked={filters.noAnswers}
-                  onChange={handleCheckboxChange}
-                  name="noAnswers"
-                />
+                <Checkbox checked={filters.noAnswers} onChange={handleCheckboxChange} name="noAnswers" />
               }
               label="No answers"
             />
             <FormControlLabel
               control={
-                <Checkbox
-                  checked={filters.noAccepted}
-                  onChange={handleCheckboxChange}
-                  name="noAccepted"
-                />
+                <Checkbox checked={filters.noAccepted} onChange={handleCheckboxChange} name="noAccepted" />
               }
               label="No accepted answer"
             />
             <FormControlLabel
               control={
-                <Checkbox
-                  checked={filters.hasBounty}
-                  onChange={handleCheckboxChange}
-                  name="hasBounty"
-                />
+                <Checkbox checked={filters.hasBounty} onChange={handleCheckboxChange} name="hasBounty" />
               }
               label="Has bounty"
             />
@@ -224,7 +222,6 @@ const QuestionList = ({ questions, pageSize }) => {
           perPage={questionsPerPage}
           onPerPageChange={handleQuestionsPerPageChange}
         />
-
       )}
     </Box>
   );
