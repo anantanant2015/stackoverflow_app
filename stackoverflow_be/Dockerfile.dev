@@ -38,7 +38,6 @@ COPY . .
 
 # Install JS deps
 WORKDIR /app/assets
-RUN npm install
 
 WORKDIR /app
 
