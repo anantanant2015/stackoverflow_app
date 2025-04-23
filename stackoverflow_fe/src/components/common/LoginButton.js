@@ -1,7 +1,30 @@
-import React from 'react';
-import { useAuth } from '../auth/useAuth';
+// src/components/LoginButton.js
+import React from "react";
+import {
+  generateCodeVerifier,
+  generateCodeChallenge,
+} from "../utils/pkceUtils";
 
-export const LoginButton = () => {
-  const { login } = useAuth();
-  return <button onClick={login}>Login with StackExchange</button>;
-};
+export default function LoginButton() {
+  const loginWithStackExchange = async () => {
+    const codeVerifier = generateCodeVerifier();
+    const codeChallenge = await generateCodeChallenge(codeVerifier);
+
+    localStorage.setItem("pkce_code_verifier", codeVerifier);
+
+    const params = new URLSearchParams({
+      client_id: process.env.REACT_APP_STACK_CLIENT_ID,
+      redirect_uri: process.env.REACT_APP_STACK_REDIRECT_URI,
+      response_type: "code",
+      scope: "read_inbox",
+      code_challenge: codeChallenge,
+      code_challenge_method: "S256",
+    });
+
+    window.location.href = `https://stackoverflow.com/oauth?${params.toString()}`;
+  };
+
+  return (
+    <button onClick={loginWithStackExchange}>Login with StackExchange</button>
+  );
+}
