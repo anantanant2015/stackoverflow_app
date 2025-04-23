@@ -1,6 +1,6 @@
 // SearchQuestions.js
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState } from "react";
+import axios from "axios";
 import {
   Box,
   Button,
@@ -10,12 +10,12 @@ import {
   List,
   ListItem,
   ListItemText,
-} from '@mui/material';
+} from "@mui/material";
 
-const API_KEY = 'YOUR_STACKAPPS_KEY';
+const API_KEY = "YOUR_STACKAPPS_KEY";
 
 const SearchQuestions = () => {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -24,18 +24,21 @@ const SearchQuestions = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get('https://api.stackexchange.com/2.3/search', {
-        params: {
-          order: 'desc',
-          sort: 'relevance',
-          intitle: query,
-          site: 'stackoverflow',
-          key: API_KEY,
+      const response = await axios.get(
+        "https://api.stackexchange.com/2.3/search",
+        {
+          params: {
+            order: "desc",
+            sort: "relevance",
+            intitle: query,
+            site: "stackoverflow",
+            key: API_KEY,
+          },
         },
-      });
+      );
       setResults(response.data.items);
     } catch (err) {
-      setError('Failed to fetch search results');
+      setError("Failed to fetch search results");
     } finally {
       setLoading(false);
     }

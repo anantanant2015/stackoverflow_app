@@ -1,8 +1,12 @@
-import React from 'react';
-import { Grid, Pagination, ToggleButtonGroup, ToggleButton, Typography, FormControl, Select, MenuItem, InputLabel } from '@mui/material';
-
-
-
+import React from "react";
+import {
+  Grid,
+  Pagination,
+  ToggleButtonGroup,
+  ToggleButton,
+  Typography,
+} from "@mui/material";
+import PropTypes from "prop-types";
 
 const PaginationControls = ({
   currentPage,
@@ -31,47 +35,61 @@ const PaginationControls = ({
 
       {/* Right: Results per page */}
       <Grid item>
-        <ToggleButtonGroup variant="outlined" shape="rounded"
+        <ToggleButtonGroup
+          variant="outlined"
+          shape="rounded"
           value={rowsPerPage}
           exclusive
           onChange={(e, value) => {
             if (value !== null) onPerPageChange(value);
           }}
           sx={{
-            ml: 'auto',
-            borderRadius: '5px',
-            '& .MuiToggleButton': {
-              border: '1px solid #ccc',
+            ml: "auto",
+            borderRadius: "5px",
+            "& .MuiToggleButton": {
+              border: "1px solid #ccc",
               m: 2,
-              fontSize: '0.875rem',
+              fontSize: "0.875rem",
               justifyContent: "flex-end",
               alignItems: "center",
             },
-            '& .Mui-selected': {
-              backgroundColor: 'red',
-              color: 'white',
-              borderColor: 'red',
-              '&:hover': {
-                backgroundColor: '#cc0000',
+            "& .Mui-selected": {
+              backgroundColor: "red",
+              color: "white",
+              borderColor: "red",
+              "&:hover": {
+                backgroundColor: "#cc0000",
               },
-            }
+            },
           }}
         >
           {[15, 30, 50].map((value) => (
-            <ToggleButton key={value} value={value} sx={{ borderRadius: '5px', margin: '13px' }}>
+            <ToggleButton
+              key={value}
+              value={value}
+              sx={{ borderRadius: "5px", margin: "13px" }}
+            >
               {value}
             </ToggleButton>
           ))}
-          <Typography variant="body2" sx={{ color: 'text.secondary', margin: '13px' }}>
+          <Typography
+            variant="body2"
+            sx={{ color: "text.secondary", margin: "13px" }}
+          >
             per page
           </Typography>
         </ToggleButtonGroup>
-
-
-
       </Grid>
     </Grid>
   );
+};
+
+PaginationControls.propTypes = {
+  currentPage: PropTypes.number.isRequired,
+  totalPages: PropTypes.number.isRequired,
+  rowsPerPage: PropTypes.number.isRequired,
+  onPageChange: PropTypes.func.isRequired,
+  onPerPageChange: PropTypes.func.isRequired,
 };
 
 export default PaginationControls;

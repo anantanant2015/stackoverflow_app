@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import {
   fetchQuestionById,
   upvoteQuestion,
   downvoteQuestion,
   fetchCommentsOnQuestion,
-  postCommentToQuestion
-} from '../../../api';
+  postCommentToQuestion,
+} from "../../../api";
 import {
   Container,
   Typography,
@@ -24,11 +24,12 @@ import {
   Button,
   Snackbar,
   Alert,
-  Switch, FormControlLabel
-} from '@mui/material';
-import ThumbUpIcon from '@mui/icons-material/ThumbUp';
-import ThumbDownIcon from '@mui/icons-material/ThumbDown';
-
+  Switch,
+  FormControlLabel,
+} from "@mui/material";
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
+import ThumbDownIcon from "@mui/icons-material/ThumbDown";
+import PropTypes from "prop-types";
 
 const QuestionDetail = ({ pageSize }) => {
   const { id } = useParams();
@@ -36,11 +37,14 @@ const QuestionDetail = ({ pageSize }) => {
   const [loading, setLoading] = useState(true);
   const [comments, setComments] = useState([]);
   const [voteCount, setVoteCount] = useState(null);
-  const [newComment, setNewComment] = useState('');
+  const [newComment, setNewComment] = useState("");
   const [postingComment, setPostingComment] = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
   const [previewMode, setPreviewMode] = useState(false);
-
 
   useEffect(() => {
     const loadQuestion = async () => {
@@ -63,9 +67,17 @@ const QuestionDetail = ({ pageSize }) => {
     const success = await upvoteQuestion(id);
     if (success) {
       setVoteCount((prev) => prev + 1);
-      setSnackbar({ open: true, message: 'Upvoted successfully!', severity: 'success' });
+      setSnackbar({
+        open: true,
+        message: "Upvoted successfully!",
+        severity: "success",
+      });
     } else {
-      setSnackbar({ open: true, message: 'Failed to upvote.', severity: 'error' });
+      setSnackbar({
+        open: true,
+        message: "Failed to upvote.",
+        severity: "error",
+      });
     }
   };
 
@@ -73,9 +85,17 @@ const QuestionDetail = ({ pageSize }) => {
     const success = await downvoteQuestion(id);
     if (success) {
       setVoteCount((prev) => prev - 1);
-      setSnackbar({ open: true, message: 'Downvoted successfully!', severity: 'success' });
+      setSnackbar({
+        open: true,
+        message: "Downvoted successfully!",
+        severity: "success",
+      });
     } else {
-      setSnackbar({ open: true, message: 'Failed to downvote.', severity: 'error' });
+      setSnackbar({
+        open: true,
+        message: "Failed to downvote.",
+        severity: "error",
+      });
     }
   };
 
@@ -83,32 +103,43 @@ const QuestionDetail = ({ pageSize }) => {
     if (!newComment.trim()) return;
     setPostingComment(true);
     try {
-      const result = await postCommentToQuestion(id, newComment, null, previewMode);
+      const result = await postCommentToQuestion(
+        id,
+        newComment,
+        null,
+        previewMode,
+      );
       if (result && result.items && result.items.length > 0) {
         const newItem = result.items[0];
         setComments((prev) => [...prev, newItem]);
-        setNewComment('');
-        setSnackbar({ open: true, message: 'Comment posted.', severity: 'success' });
+        setNewComment("");
+        setSnackbar({
+          open: true,
+          message: "Comment posted.",
+          severity: "success",
+        });
       }
     } catch (error) {
-      console.error('Failed to post comment:', error);
-      setSnackbar({ open: true, message: 'Failed to post comment.', severity: 'error' });
+      console.error("Failed to post comment:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to post comment.",
+        severity: "error",
+      });
     } finally {
       setPostingComment(false);
     }
   };
 
-
-
-
-
-
   if (loading) return <CircularProgress />;
-  if (!question) return <Typography variant="h6">Question not found.</Typography>;
+  if (!question)
+    return <Typography variant="h6">Question not found.</Typography>;
 
   return (
     <Container maxWidth="md" sx={{ mt: 4 }}>
-      <Typography variant="h4" gutterBottom>{question.title}</Typography>
+      <Typography variant="h4" gutterBottom>
+        {question.title}
+      </Typography>
 
       <Box mt={2}>
         {question.tags.map((tag, index) => (
@@ -117,7 +148,10 @@ const QuestionDetail = ({ pageSize }) => {
       </Box>
 
       <Box display="flex" alignItems="center" mt={2}>
-        <Avatar src={question.owner.profile_image} alt={question.owner.display_name} />
+        <Avatar
+          src={question.owner.profile_image}
+          alt={question.owner.display_name}
+        />
         <Box ml={2}>
           <Typography variant="body2">{question.owner.display_name}</Typography>
           <Typography variant="caption" color="textSecondary">
@@ -127,7 +161,11 @@ const QuestionDetail = ({ pageSize }) => {
       </Box>
 
       <Box mt={2}>
-        <Typography variant="body1" component="div" dangerouslySetInnerHTML={{ __html: question.body }} />
+        <Typography
+          variant="body1"
+          component="div"
+          dangerouslySetInnerHTML={{ __html: question.body }}
+        />
       </Box>
 
       <Box display="flex" alignItems="center" mt={2}>
@@ -136,7 +174,9 @@ const QuestionDetail = ({ pageSize }) => {
             <ThumbUpIcon />
           </IconButton>
         </Tooltip>
-        <Typography variant="body1" sx={{ mx: 1 }}>{voteCount}</Typography>
+        <Typography variant="body1" sx={{ mx: 1 }}>
+          {voteCount}
+        </Typography>
         <Tooltip title="Downvote">
           <IconButton onClick={handleDownvote} color="secondary">
             <ThumbDownIcon />
@@ -147,19 +187,25 @@ const QuestionDetail = ({ pageSize }) => {
       {/* Comments Section */}
       <Box mt={4}>
         <Divider sx={{ mb: 2 }} />
-        <Typography variant="h6" gutterBottom>Comments</Typography>
+        <Typography variant="h6" gutterBottom>
+          Comments
+        </Typography>
         <List>
           {comments.length > 0 ? (
             comments.map((comment) => (
               <ListItem key={comment.comment_id} alignItems="flex-start">
                 <ListItemText
-                  primary={<span dangerouslySetInnerHTML={{ __html: comment.body }} />}
+                  primary={
+                    <span dangerouslySetInnerHTML={{ __html: comment.body }} />
+                  }
                   secondary={`— ${comment.owner.display_name}`}
                 />
               </ListItem>
             ))
           ) : (
-            <Typography variant="body2" color="textSecondary">No comments available.</Typography>
+            <Typography variant="body2" color="textSecondary">
+              No comments available.
+            </Typography>
           )}
         </List>
         <Box display="flex" flexDirection="column" gap={2} mt={2}>
@@ -186,10 +232,9 @@ const QuestionDetail = ({ pageSize }) => {
             onClick={handleAddComment}
             disabled={postingComment || !newComment.trim()}
           >
-            {previewMode ? 'Preview' : 'Post'}
+            {previewMode ? "Preview" : "Post"}
           </Button>
         </Box>
-
 
         <Box display="flex" gap={2} mt={2}>
           <TextField
@@ -200,7 +245,6 @@ const QuestionDetail = ({ pageSize }) => {
             multiline
             minRows={2}
           />
-
 
           <Button
             variant="contained"
@@ -217,18 +261,22 @@ const QuestionDetail = ({ pageSize }) => {
         open={snackbar.open}
         autoHideDuration={3000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
         <Alert
           onClose={() => setSnackbar({ ...snackbar, open: false })}
           severity={snackbar.severity}
-          sx={{ width: '100%' }}
+          sx={{ width: "100%" }}
         >
           {snackbar.message}
         </Alert>
       </Snackbar>
     </Container>
   );
+};
+
+QuestionDetail.propTypes = {
+  pageSize: PropTypes.number.isRequired,
 };
 
 export default QuestionDetail;

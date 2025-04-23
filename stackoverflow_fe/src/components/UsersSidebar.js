@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { fetchUsers } from "../api";
-import { Avatar, Box, Typography, List, ListItem, ListItemAvatar, ListItemText } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  Typography,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+} from "@mui/material";
 
 const UsersSidebar = () => {
   const [users, setUsers] = useState([]);
@@ -20,7 +28,12 @@ const UsersSidebar = () => {
       </Typography>
       <List>
         {users.map((user) => (
-          <ListItem key={user.user_id} component="a" href={user.link} target="_blank">
+          <ListItem
+            key={user.user_id}
+            component="a"
+            href={user.link}
+            target="_blank"
+          >
             <ListItemAvatar>
               <Avatar src={user.profile_image} alt={user.display_name} />
             </ListItemAvatar>
