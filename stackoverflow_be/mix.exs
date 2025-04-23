@@ -82,7 +82,8 @@ defmodule StackoverflowBe.MixProject do
         "tailwind stackoverflow_be --minify",
         "esbuild stackoverflow_be --minify",
         "phx.digest"
-      ]
+      ],
+      format: ["format"]
     ]
   end
 end
