@@ -10,7 +10,7 @@ defmodule StackoverflowBe.API do
 
     headers = [{"Content-Type", "application/json"}]
 
-    options = [headers: headers]
+    # options = [headers: headers]
 
     case method do
       :get ->
@@ -31,7 +31,8 @@ defmodule StackoverflowBe.API do
     |> handle_response()
   end
 
-  defp handle_response({:ok, %HTTPoison.Response{status_code: code, body: body}}) when code in 200..299 do
+  defp handle_response({:ok, %HTTPoison.Response{status_code: code, body: body}})
+       when code in 200..299 do
     {:ok, Jason.decode!(body)}
   end
 
@@ -41,5 +42,21 @@ defmodule StackoverflowBe.API do
 
   defp handle_response({:error, reason}) do
     {:error, reason}
+  end
+
+  def fetch_questions do
+    proxy_request(:get, "/questions", %{site: "stackoverflow"})
+    |> case do
+      {:ok, %{"items" => items}} -> {:ok, items}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  def fetch_answers(question_id) do
+    proxy_request(:get, "/questions/#{question_id}/answers", %{site: "stackoverflow"})
+    |> case do
+      {:ok, %{"items" => items}} -> {:ok, items}
+      {:error, reason} -> {:error, reason}
+    end
   end
 end

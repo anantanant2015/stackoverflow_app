@@ -2,30 +2,31 @@ defmodule StackoverflowBeWeb.Router do
   use StackoverflowBeWeb, :router
 
   pipeline :browser do
-    plug :accepts, ["html"]
-    plug :fetch_session
-    plug :fetch_live_flash
-    plug :put_root_layout, html: {StackoverflowBeWeb.Layouts, :root}
-    plug :protect_from_forgery
-    plug :put_secure_browser_headers
+    plug(:accepts, ["html"])
+    plug(:fetch_session)
+    plug(:fetch_live_flash)
+    plug(:put_root_layout, html: {StackoverflowBeWeb.Layouts, :root})
+    plug(:protect_from_forgery)
+    plug(:put_secure_browser_headers)
   end
 
   pipeline :api do
-    plug :accepts, ["json"]
+    plug(:accepts, ["json"])
   end
 
   scope "/", StackoverflowBeWeb do
-    pipe_through :browser
+    pipe_through(:browser)
 
-    get "/", PageController, :home
+    get("/", PageController, :home)
   end
 
   scope "/api", StackoverflowBeWeb do
-    pipe_through :api
-    get "/questions", ApiController, :index
-    get "/questions/:id/answers", ApiController, :show_answers
+    pipe_through(:api)
+    get("/questions", ApiController, :index)
+    get("/questions/:id/answers", ApiController, :show_answers)
+    post("/auth/callback", AuthController, :callback)
+    get("/search", SearchController, :index)
   end
-
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
   if Application.compile_env(:stackoverflow_be, :dev_routes) do
@@ -37,10 +38,10 @@ defmodule StackoverflowBeWeb.Router do
     import Phoenix.LiveDashboard.Router
 
     scope "/dev" do
-      pipe_through :browser
+      pipe_through(:browser)
 
-      live_dashboard "/dashboard", metrics: StackoverflowBeWeb.Telemetry
-      forward "/mailbox", Plug.Swoosh.MailboxPreview
+      live_dashboard("/dashboard", metrics: StackoverflowBeWeb.Telemetry)
+      forward("/mailbox", Plug.Swoosh.MailboxPreview)
     end
   end
 end
