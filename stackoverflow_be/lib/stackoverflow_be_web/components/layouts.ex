@@ -10,5 +10,5 @@ defmodule StackoverflowBeWeb.Layouts do
   """
   use StackoverflowBeWeb, :html
 
-  embed_templates "layouts/*"
+  embed_templates("layouts/*")
 end

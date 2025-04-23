@@ -9,7 +9,8 @@ defmodule StackoverflowBe.LLM.Reranker do
     prompt = build_prompt(question, answers, user_input)
 
     body = %{
-      model: "mistral",  # match the model you've pulled
+      # match the model you've pulled
+      model: "mistral",
       prompt: prompt,
       stream: false
     }
@@ -19,6 +20,7 @@ defmodule StackoverflowBe.LLM.Reranker do
     case HTTPoison.post(@llm_url, Jason.encode!(body), headers) do
       {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
         parse_reranked_answers(Jason.decode!(body))
+
       {:error, err} ->
         IO.inspect(err, label: "LLM Error")
         answers
@@ -37,6 +39,7 @@ defmodule StackoverflowBe.LLM.Reranker do
 
     Provide a ranked list of answer indices in order of relevance.
     """
+
     String.trim(base)
   end
 

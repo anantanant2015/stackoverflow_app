@@ -6,5 +6,5 @@ defmodule StackoverflowBeWeb.PageHTML do
   """
   use StackoverflowBeWeb, :html
 
-  embed_templates "page_html/*"
+  embed_templates("page_html/*")
 end

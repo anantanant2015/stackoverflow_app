@@ -24,6 +24,7 @@ defmodule StackoverflowBe.OpenAIClient do
     case HTTPoison.post(@base_url, Jason.encode!(body), headers) do
       {:ok, response} ->
         {:ok, parse_response(response.body)}
+
       {:error, reason} ->
         {:error, reason}
     end
@@ -44,7 +45,9 @@ defmodule StackoverflowBe.OpenAIClient do
         text
         |> String.split("\n")
         |> Enum.map(&String.trim/1)
-      _ -> []
+
+      _ ->
+        []
     end
   end
 end
