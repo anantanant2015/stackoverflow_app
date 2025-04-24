@@ -1,3 +1,4 @@
+---
 
 # 🚀 Fullstack StackOverflow Clone
 
@@ -17,7 +18,7 @@
 - [📦 Project Structure](#-project-structure)
 - [⚙️ Development Setup](#️-development-setup)
 - [🚀 Using the Makefile](#-using-the-makefile)
-- [⚙️ Optional Manual Script Usage](#️-optional-manual-script-usage)
+- [⚙️ Manual Script Usage (Optional)](#️-manual-script-usage-optional)
 - [🔐 SSL & CORS Configuration](#-ssl--cors-configuration)
 - [🌐 Frontend Proxy (Nginx Config)](#-frontend-proxy-nginx-config)
 - [🔁 CI/CD via GitHub Actions](#-cicd-via-github-actions)
@@ -35,18 +36,17 @@
 .
 ├── stackoverflow_be/         # Phoenix backend
 ├── stackoverflow_fe/         # React frontend
-├── docker-compose.yml        # Common base for Compose
-├── docker-compose.dev.yml    # Dev environment overrides
-├── docker-compose.prod.yml   # Production deployment overrides
-├── .env                      # Dev environment config (generated)
-├── .env.prod                 # Production config (generated)
-├── scripts/                  # Utility scripts
-│   ├── generate-env.sh       # Generates .env files
-│   ├── validate-env.sh       # Validates env files
-│   ├── docker-setup.sh       # Verifies Docker Desktop is running
-│   ├── start-server.sh       # Starts server (ENV=dev|prod)
-│   └── Makefile              # Primary command interface
-└── .github/workflows/        # GitHub Actions CI/CD
+├── docker-compose.yml        # Common base Compose config
+├── docker-compose.prod.yml   # Production overrides
+├── .env                      # Dev environment config
+├── .env.prod                 # Production config
+├── scripts/                  # Utility shell scripts
+│   ├── generate-env.sh       # Interactive .env file generator
+│   ├── validate-env.sh       # Validates .env content
+│   ├── docker-setup.sh       # Verifies Docker Desktop is installed & running
+│   ├── start-server.sh       # Entrypoint for ENV=dev|prod
+│   └── Makefile              # Recommended interface
+└── .github/workflows/        # CI/CD pipeline (GitHub Actions)
 ```
 
 ---
@@ -55,47 +55,47 @@
 
 ### 🔧 Prerequisites
 
-- [Docker](https://www.docker.com/products/docker-desktop)
-- [Docker Compose](https://docs.docker.com/compose/)
-- (Optional) `make` installed
+- [Docker Desktop](https://www.docker.com/products/docker-desktop)
+- (Optional) `make` installed (`brew install make` or `sudo apt install make`)
 
 ---
 
 ## 🚀 Using the Makefile
 
-The `Makefile` is the **recommended way** to work with this project. It manages setup, validation, and environment control.
+The `Makefile` provides an **automated, zero-config** experience for dev and prod environments.
 
-### ▶️ Start the Project
+### ▶️ Launch Environments
 
 ```bash
-make -f scripts/Makefile up                # Starts the dev environment (ENV=dev by default)
-make -f scripts/Makefile up ENV=prod       # Starts the production environment
+make -f scripts/Makefile up                # Starts development stack
+make -f scripts/Makefile up ENV=prod       # Starts production stack
 ```
 
-These commands handle:
-- Environment validation
-- Script orchestration
-- Docker Compose logic
+### 🛠 Behind the Scenes
 
-> ✅ Always run from the **project root**, using `-f scripts/Makefile`.
+- Validates `.env` / `.env.prod` and generates if missing
+- Confirms Docker is available and running
+- Starts correct `docker-compose` setup
+
+> ✅ **Run from the project root**, always using `-f scripts/Makefile`.
 
 ---
 
-## ⚙️ Optional Manual Script Usage
+## ⚙️ Manual Script Usage (Optional)
 
-You can run scripts directly from the root:
+Useful if not using `make` or want fine-grained control.
 
-### 1. Generate `.env` Files
+### 1. Generate Env Files
 
 ```bash
 ./scripts/generate-env.sh
 ```
 
-This creates:
-- `.env` for development
-- `.env.prod` for production
+Creates or overwrites:
+- `.env` (for dev)
+- `.env.prod` (for prod)
 
-### 2. Validate `.env` Files
+### 2. Validate Env Files
 
 ```bash
 ./scripts/validate-env.sh .env
@@ -109,8 +109,6 @@ ENV=dev ./scripts/start-server.sh
 ENV=prod ./scripts/start-server.sh
 ```
 
-> ⚠️ Scripts must be run from the **project root**.
-
 ---
 
 ## 🔐 SSL & CORS Configuration
@@ -121,7 +119,7 @@ ENV=prod ./scripts/start-server.sh
 plug CORSPlug, origin: ["http://localhost:3000", "https://yourdomain.com"]
 ```
 
-Add to `mix.exs`:
+Install:
 
 ```elixir
 {:cors_plug, "~> 3.0"}
@@ -142,13 +140,13 @@ config :stackoverflow_be, StackoverflowBeWeb.Endpoint,
   ]
 ```
 
-### 🧪 Generate SSL for Local Dev
+### 🧪 Dev SSL Certificate Generation
 
 ```bash
 make -f scripts/Makefile generate-certs
 ```
 
-Then update `.env`:
+Add these to your `.env` or `.env.prod`:
 
 ```env
 SSL_CERT_PATH=certs/cert.pem
@@ -159,7 +157,7 @@ SSL_KEY_PATH=certs/key.pem
 
 ## 🌐 Frontend Proxy (Nginx Config)
 
-`stackoverflow_fe/nginx.conf`:
+Inside `stackoverflow_fe/nginx.conf`:
 
 ```nginx
 server {
@@ -188,33 +186,34 @@ server {
 
 ## 🔁 CI/CD via GitHub Actions
 
-See `.github/workflows/deploy.yml`:
+Workflow: `.github/workflows/deploy.yml`
 
-- ✅ Docker build and push on `main`
-- ✅ Deploys via secrets and auto-hooks
+- Auto builds Docker images
+- Pushes to registry (if configured)
+- Deploys based on branch and secret setup
 
 ---
 
 ## 🌍 Suggested Free Deployment
 
-Use [Render](https://render.com/):
+**Recommended**: [Render](https://render.com/)
 
-- Backend → Docker Web Service
-- Frontend → Static Site + Nginx
-- DB → Render PostgreSQL or Docker volume
+- Backend: Docker → Web Service
+- Frontend: Static Site (with custom Nginx if needed)
+- Database: PostgreSQL via Render or Docker volume
 
 ---
 
 ## 💡 Useful Developer Commands
 
 ```bash
-make -f scripts/Makefile up                 # Start stack (default ENV=dev)
-make -f scripts/Makefile up ENV=prod        # Start production stack
-make -f scripts/Makefile down               # Stop services
-docker-compose ps                           # Check status
+make -f scripts/Makefile up                 # Start stack (default: dev)
+make -f scripts/Makefile up ENV=prod        # Start stack (prod)
+make -f scripts/Makefile down               # Stop stack
+docker-compose ps                           # Inspect container state
 ```
 
-### Migrations
+### Running Migrations
 
 ```bash
 docker-compose exec backend mix ecto.migrate
@@ -225,22 +224,23 @@ docker-compose exec backend mix ecto.migrate
 ## ✅ Features Recap
 
 - ✅ Phoenix + React fullstack architecture
-- ✅ Dockerized environments (dev/prod)
-- ✅ `.env` generation and validation
+- ✅ Docker-first setup with `.env` generation & validation
 - ✅ SSL and CORS support
-- ✅ LLM reranking via OpenAI or local Ollama
-- ✅ PostgreSQL database
-- ✅ GitHub CI/CD
-- ✅ One-command setup with `Makefile`
+- ✅ LLM support: OpenAI or local Ollama
+- ✅ PostgreSQL + CI/CD + Nginx frontend proxy
+- ✅ SSO login, query & result caching
+- ✅ One-command setup using `Makefile`
 
 ---
 
 ## 🙌 Contributing
 
-Fork, star ⭐, open issues, or submit PRs. Feedback is welcome!
+Star ⭐ the repo, fork, open issues, or submit pull requests. Contributions welcome!
 
 ---
 
 ## 📄 License
 
 MIT
+
+---
