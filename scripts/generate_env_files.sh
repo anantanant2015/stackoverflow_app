@@ -40,7 +40,7 @@ ENV_VARS=(
   "DB_HOST|DB Hostname|db|db"
   "DB_PORT|DB Port|5432|5432"
   "DB_NAME|DB Name|stackoverflow_be_dev|prod_db"
-  "DATABASE_URL|Full DB URL (optional)||"
+  "DATABASE_URL|Full DB URL (optional)|db_url|db_url"
   "MIX_ENV|Mix environment|dev|prod"
 
   "SECRET_KEY_BASE|Phoenix secret key (auto-generate if blank)||"
@@ -49,15 +49,15 @@ ENV_VARS=(
   "PHX_SERVER|Run Phoenix server|true|true"
   "SSL_KEY_PATH|SSL key path (optional)||certs/key.pem"
   "SSL_CERT_PATH|SSL cert path (optional)||certs/cert.pem"
-  "DNS_CLUSTER_QUERY|DNS cluster query (optional)||"
+  "DNS_CLUSTER_QUERY|DNS cluster query (optional)|dns_cluster_query|dns_cluster_query"
 
   "OPENAI_API_KEY|OpenAI API key (optional)||"
   "LLM_API_URL|LLM API URL|http://llm:11434/api/generate|http://llm:11434/api/generate"
-  "STACK_APP_CLIENT_ID|Your stackexchange app client id||"
-  "STACK_APP_CLIENT_SECRET|Your stackexchane app client secret||"
-  "STACK_APP_REDIRECT_URI|Your stackexchange app redirect URL||"
-  "MAILGUN_API_KEY|Mailgun API Key||"
-  "MAILGUN_DOMAIN|Mailgun Domain||"
+  "STACK_APP_CLIENT_ID|Your stackexchange app client id|stackexchange_app_client_id|stackexchange_app_client_id"
+  "STACK_APP_CLIENT_SECRET|Your stackexchane app client secret|stackexchane_app_client_secret|stackexchane_app_client_secret"
+  "STACK_APP_REDIRECT_URI|Your stackexchange app redirect URL|stackexchange_app_redirect_url|stackexchange_app_redirect_url"
+  "MAILGUN_API_KEY|Mailgun API Key|mailgun_api_key|mailgun_api_key"
+  "MAILGUN_DOMAIN|Mailgun Domain|mailgun_domain|mailgun_domain"
 
   # React
   "CHOKIDAR_USEPOLLING|Enable polling|true|false"
@@ -65,9 +65,9 @@ ENV_VARS=(
   "REACT_APP_API_URL|Backend base URL|http://localhost:4000|https://yourdomain.com"
   "REACT_APP_API_SUFFIX|API path suffix|/api/|/api/"
   "REACT_APP_CACHE_EXPIRATION|Cache time (ms)|86400000|86400000"
-  "REACT_APP_SITE|Frontend site (required)|localhost|yourdomain.com"
-  "REACT_APP_STACK_APP_KEY|Stack App Key||"
-  "REACT_APP_STACKEXCHANGE_KEY|StackExchange Key||"
+  "REACT_APP_SITE|Frontend site (required)|stackoverflow|stackoverflow"
+  "REACT_APP_STACK_APP_KEY|Stack App Key|stackexchange_app_key|stackexchange_app_key"
+  "REACT_APP_STACKEXCHANGE_KEY|StackExchange Key|stackexchange_app_key|stackexchange_app_key"
 
   # LLM
   "LLM_MODEL|LLM model name (e.g., tinyllama)|tinyllama|tinyllama"

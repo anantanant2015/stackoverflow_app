@@ -94,7 +94,7 @@ export const apiRequest = async ({
   try {
     const response = await api.request({
       url,
-      method,
+      method: "POST",
       data: fullParams,
     });
 

@@ -11,7 +11,7 @@ defmodule StackoverflowBe.Helper.QueryParser do
   @default_params %{
     "order" => "desc",
     "sort" => "activity",
-    "pagesize" => 10,
+    "pagesize" => 100,
     "page" => 1
   }
 

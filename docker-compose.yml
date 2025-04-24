@@ -12,11 +12,17 @@ services:
       - app_net
     ports:
       - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
     build:
       context: ./stackoverflow_be
       dockerfile: Dockerfile.dev
+    container_name: backend
     restart: always
     environment:
       MIX_ENV: ${MIX_ENV}
@@ -32,9 +38,18 @@ services:
       - node_modules_be:/app/assets/node_modules
     command: sh -c "mix ecto.setup || true && mix phx.server"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+      llm:
+        condition: service_healthy
     ports:
       - "4000:4000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:4000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
     networks:
       - app_net
 
@@ -42,23 +57,26 @@ services:
     build:
       context: ./stackoverflow_fe
       dockerfile: Dockerfile.dev
-      restart: always
+    container_name: frontend
+    restart: always
     volumes:
       - ./stackoverflow_fe:/app
       - node_modules_fe:/app/node_modules
     ports:
       - "3000:3000"
     environment:
-      - CHOKIDAR_USEPOLLING=true
-      - REACT_HOST=${REACT_HOST}
-      - REACT_APP_API_URL=${REACT_APP_API_URL}
-      - REACT_APP_SITE=${REACT_APP_SITE}
-      - REACT_APP_CACHE_EXPIRATION=${REACT_APP_CACHE_EXPIRATION}
-      - REACT_APP_STACK_APP_KEY=${REACT_APP_STACK_APP_KEY}
+      CHOKIDAR_USEPOLLING: "true"
+      REACT_HOST: ${REACT_HOST}
+      REACT_APP_API_URL: ${REACT_APP_API_URL}
+      REACT_APP_API_SUFFIX: ${REACT_APP_API_SUFFIX}
+      REACT_APP_SITE: ${REACT_APP_SITE}
+      REACT_APP_CACHE_EXPIRATION: ${REACT_APP_CACHE_EXPIRATION}
+      REACT_APP_STACK_APP_KEY: ${REACT_APP_STACK_APP_KEY}
     networks:
       - app_net
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
 
   llm:
     build:
@@ -70,17 +88,18 @@ services:
     volumes:
       - ollama_models:/root/.ollama
     environment:
-      - OLLAMA_HOST=${OLLAMA_HOST}
-    networks:
-      - app_net
+      OLLAMA_HOST: ${OLLAMA_HOST}
     env_file:
       - .env
+    networks:
+      - app_net
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:11434 || exit 1" ]
+      test: ["CMD-SHELL", "curl -sf http://localhost:11434/api/tags | grep -q ${LLM_MODEL:-tinyllama}"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 15
+      start_period: 30s
 
 volumes:
   db_data:
@@ -89,7 +108,6 @@ volumes:
   node_modules_be:
   node_modules_fe:
   ollama_models:
-
 
 networks:
   app_net:

@@ -1,17 +1,31 @@
 #!/bin/bash
 
-echo "Ollama version:"
-ollama version
-
 echo "Starting Ollama with model: $LLM_MODEL"
 
-# Optional cleanup
-if [ "$OLLAMA_CLEAN_UNUSED_MODELS" = "true" ]; then
-  echo "Cleaning up unused Ollama models..."
-  ollama list | awk 'NR>1 {print $1}' | while read -r model; do
-    ollama rm "$model"
-  done
+ollama serve &
+
+# Wait for Ollama server to be ready
+until curl -s http://localhost:11434 > /dev/null; do
+  echo "Waiting for Ollama to start..."
+  sleep 1
+done
+
+# Pull model if needed
+if ! ollama list | grep -q "$LLM_MODEL"; then
+  echo "Model '$LLM_MODEL' not found. Pulling..."
+  ollama pull "$LLM_MODEL"
+else
+  echo "Model '$LLM_MODEL' already pulled."
 fi
 
-# Serve with proper binding
-exec ollama serve
+# Wait for the model to show up in /api/tags
+echo "Waiting for model '$LLM_MODEL' to be available..."
+until curl -s http://localhost:11434/api/tags | grep -q "$LLM_MODEL"; do
+  echo "Model not yet available, retrying..."
+  sleep 1
+done
+
+echo "Model '$LLM_MODEL' is ready!"
+
+# Keep container running
+wait
