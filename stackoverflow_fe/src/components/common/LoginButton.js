@@ -3,7 +3,8 @@ import React from "react";
 import {
   generateCodeVerifier,
   generateCodeChallenge,
-} from "../utils/pkceUtils";
+} from "../auth/pkceUtils";
+import { Button } from "@mui/material";
 
 export default function LoginButton() {
   const loginWithStackExchange = async () => {
@@ -25,6 +26,6 @@ export default function LoginButton() {
   };
 
   return (
-    <button onClick={loginWithStackExchange}>Login with StackExchange</button>
+    <Button variant="contained" onClick={loginWithStackExchange}>Login</Button>
   );
 }

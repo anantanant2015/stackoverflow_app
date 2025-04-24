@@ -6,11 +6,14 @@ defmodule StackoverflowBe.LLM.Reranker do
   @llm_url System.get_env("LLM_API_URL", "http://local_llm:11434/api/generate")
 
   def rerank_answers(question, answers, user_input) do
-    prompt = build_prompt(question, answers, user_input)
+    prompt =
+      user_input
+      |> JSON.encode!()
+      |> build_prompt(question, answers)
 
     body = %{
       # match the model you've pulled
-      model: "mistral",
+      model: "tinyllama",
       prompt: prompt,
       stream: false
     }
@@ -27,7 +30,7 @@ defmodule StackoverflowBe.LLM.Reranker do
     end
   end
 
-  defp build_prompt(question, answers, user_input) do
+  defp build_prompt(user_input, question, answers) do
     base = """
     You are a helpful assistant. Given a programming question and multiple StackOverflow answers, rerank them by relevance to the user input.
 
@@ -35,9 +38,9 @@ defmodule StackoverflowBe.LLM.Reranker do
     User input: #{user_input}
 
     Answers:
-    #{Enum.with_index(answers) |> Enum.map(fn {a, i} -> "#{i + 1}. #{a}" end) |> Enum.join("\n")}
+    #{JSON.encode!(answers)}
 
-    Provide a ranked list of answer indices in order of relevance.
+    Provide a re-ranked list of items answer indices in order of relevance and in the same format as Answers.
     """
 
     String.trim(base)
