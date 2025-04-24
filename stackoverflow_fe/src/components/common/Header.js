@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { styled, alpha } from "@mui/material/styles";
-import { Box, Grid } from "@mui/material";
+import { Box, Grid, Switch, FormControlLabel } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import InputBase from "@mui/material/InputBase";
@@ -15,6 +15,9 @@ import { ReactComponent as TrophyIcon } from "../../assets/trophy.svg";
 import HelpIcon from "@mui/icons-material/Help";
 import { ReactComponent as StackIcon } from "../../assets/stack.svg";
 import PropTypes from "prop-types";
+import CacheSettings from "./CacheSettings";
+import LoginButton from "./LoginButton";
+import SearchInputWithHints from "./SearchInputWithHints";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -28,7 +31,6 @@ const Search = styled("div")(({ theme }) => ({
   width: "100%",
   border: "solid",
   borderColor: "#babfc5",
-  // borderRadius: '5px',
   borderWidth: "1px",
   color: "black",
   minWidth: "12px",
@@ -49,7 +51,6 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   color: "inherit",
   "& .MuiInputBase-input": {
     padding: theme.spacing(1, 1, 1, 0),
-    // vertical padding + font size from searchIcon
     paddingLeft: `calc(1em + ${theme.spacing(4)})`,
     transition: theme.transitions.create("width"),
     width: "100%",
@@ -59,15 +60,36 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 export default function Header({ onSearch }) {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
+  const [cacheEnabled, setCacheEnabled] = useState(false);
+
+  // On mount, read cache enabled state from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem("cacheEnabled");
+    setCacheEnabled(stored === "true");
+  }, []);
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && query.trim()) {
       onSearch({ q: query.trim() });
     }
   };
+
+  // Toggle cache and save to localStorage
+  const handleCacheToggle = (event) => {
+    const enabled = event.target.checked;
+    setCacheEnabled(enabled);
+    localStorage.setItem("cacheEnabled", enabled.toString());
+  };
+
   return (
     <Box>
-      <Grid container direction="row" sx={styles.header} spacing={0.5}>
+      <Grid
+        container
+        direction="row"
+        sx={styles.header}
+        spacing={0.5}
+        alignItems="center"
+      >
         <Grid item>
           <IconButton
             size="large"
@@ -75,8 +97,9 @@ export default function Header({ onSearch }) {
             color="inherit"
             aria-label="open drawer"
             sx={{ m: 2 }}
-          ></IconButton>
+          />
         </Grid>
+
         <Grid item>
           <Typography variant="h6" noWrap component="div" sx={styles.logo}>
             <a href="http://localhost:3000">
@@ -84,6 +107,7 @@ export default function Header({ onSearch }) {
             </a>
           </Typography>
         </Grid>
+
         <Grid item>
           <Chip
             label="Products"
@@ -101,24 +125,27 @@ export default function Header({ onSearch }) {
           />
         </Grid>
 
+        <Grid item xs>
+          <SearchInputWithHints
+            placeholder="Search…"
+            inputProps={{ "aria-label": "search" }}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+        </Grid>
+
+        {/* Cache toggle switch */}
         <Grid item>
-          <Search>
-            <SearchIconWrapper>
-              <SearchIcon />
-            </SearchIconWrapper>
-            <StyledInputBase
-              placeholder="Search…"
-              inputProps={{ "aria-label": "search" }}
-            />
-            <input
-              type="text"
-              className="w-full p-2 border rounded"
-              placeholder="Search StackOverflow..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
-            />
-          </Search>
+          <FormControlLabel
+            control={<Switch checked={cacheEnabled} onChange={handleCacheToggle} />}
+            label="Enable Browser Cache"
+            sx={styles.headerSwitch}
+          />
+
+        </Grid>
+        <Grid item>
+          <CacheSettings sx={styles.headerSwitch} />
         </Grid>
 
         <Grid item sx={{ margin: 0 }}>
@@ -141,10 +168,9 @@ export default function Header({ onSearch }) {
             <StackIcon />
           </Icon>
         </Grid>
+
         <Grid item>
-          <Typography variant="h6" noWrap component="div">
-            <a href="http://localhost:3000">View Details</a>
-          </Typography>
+          <LoginButton />
         </Grid>
       </Grid>
     </Box>
@@ -152,5 +178,5 @@ export default function Header({ onSearch }) {
 }
 
 Header.propTypes = {
-  onSearch: PropTypes.func.isRequired, // or .func if it's optional
+  onSearch: PropTypes.func.isRequired,
 };
