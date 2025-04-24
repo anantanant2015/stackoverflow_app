@@ -6,11 +6,12 @@ defmodule StackoverflowBeWeb.Api.CommonProxyController do
     with %{"method" => method, "path" => path} <- conn.params do
       method_atom = String.downcase(method) |> String.to_existing_atom()
 
-      body = if conn.method in ["GET", "POST", "PUT", "PATCH"] do
-        conn.body_params
-      else
-        nil
-      end
+      body =
+        if conn.method in ["GET", "POST", "PUT", "PATCH"] do
+          conn.body_params
+        else
+          nil
+        end
 
       params = Map.drop(conn.params, ["method", "path"])
 

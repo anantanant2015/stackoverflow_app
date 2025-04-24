@@ -1,9 +1,12 @@
-import { Margin } from "@mui/icons-material";
-
 export const styles = {
   layout: {
     layoutBox: { height: "100vh", width: "100vw", overflow: "hidden" },
-    itemTheme: { display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" },
+    itemTheme: {
+      display: "flex",
+      flexDirection: "column",
+      height: "100%",
+      overflow: "hidden",
+    },
 
     mobileViewWidthQuery: "(max-width: 639px)",
     tabletViewWidthQuery: "(min-width: 640px) and (max-width: 980px)",
@@ -23,13 +26,32 @@ export const styles = {
         backgroundColor: "#f8f9f9",
         boxShadow: "none",
         borderBottom: "1px solid #e4e6e8",
-        flexGrow: 1, display: "flex", alignItems: "center", justifyContent: "center",
+        flexGrow: 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
         margin: 0,
       },
       appBarToolbarSx: { minHeight: "auto", padding: 0 },
-      leftSx: { display: "flex", alignItems: "center", justifyContent: "flex-start" },
-      midSx: { flexGrow: 1, width: "90%", marginLeft: "5%",  marginRight: "5%", display: "flex", alignItems: "center", justifyContent: "center" },
-      rightSx: { display: "flex", alignItems: "center", justifyContent: "flex-end" },
+      leftSx: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "flex-start",
+      },
+      midSx: {
+        flexGrow: 1,
+        width: "90%",
+        marginLeft: "5%",
+        marginRight: "5%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      },
+      rightSx: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "flex-end",
+      },
     },
 
     mobileView: {
@@ -80,7 +102,12 @@ export const styles = {
       boxFlexDirection: "row",
       boxAlignItems: "stretch",
       boxMt: 6.5,
-      boxSx: { flexGrow: 1, width: "50%", marginLeft: "25%",  marginRight: "25%" },
+      boxSx: {
+        flexGrow: 1,
+        width: "50%",
+        marginLeft: "25%",
+        marginRight: "25%",
+      },
       leftSize: 3,
       midSize: 18,
       rightSize: 3,
@@ -141,5 +168,5 @@ export const styles = {
   },
   headerSwitch: {
     color: "black",
-  }
+  },
 };

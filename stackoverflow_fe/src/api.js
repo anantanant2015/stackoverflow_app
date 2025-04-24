@@ -5,7 +5,8 @@ import axios from "axios";
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000/api/";
 const API_SUFFIX = process.env.REACT_APP_API_SUFFIX || "";
 const SITE = process.env.REACT_APP_SITE || "stackoverflow";
-const CACHE_EXPIRATION = Number(process.env.REACT_APP_CACHE_EXPIRATION) || 720 * 60 * 1000; // default 720 min
+const CACHE_EXPIRATION =
+  Number(process.env.REACT_APP_CACHE_EXPIRATION) || 720 * 60 * 1000; // default 720 min
 const STACKEXCHANGE_KEY = process.env.REACT_APP_STACK_APP_KEY;
 
 if (!STACKEXCHANGE_KEY) throw new Error("Stack App Key is missing.");
@@ -34,7 +35,6 @@ const isRerankEnabled = () => {
     return false;
   }
 };
-
 
 // Cache helpers
 const getCache = (key) => {
@@ -110,8 +110,6 @@ export const apiRequest = async ({
     throw error;
   }
 };
-
-
 
 // API endpoint wrappers
 
@@ -215,7 +213,12 @@ export const fetchCommentsOnQuestion = async (questionId) =>
     cacheKey: `comments_${questionId}`,
   });
 
-export const postCommentToQuestion = async (questionId, body, accessToken, preview = false) => {
+export const postCommentToQuestion = async (
+  questionId,
+  body,
+  accessToken,
+  preview = false,
+) => {
   const token = accessToken || localStorage.getItem("stack_token");
   if (!token) throw new Error("Access token is required to post a comment.");
 

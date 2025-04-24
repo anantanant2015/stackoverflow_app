@@ -23,7 +23,7 @@ defmodule StackoverflowBeWeb.Router do
   scope "/api", StackoverflowBeWeb.Api do
     pipe_through(:api)
 
-    get "/health", HealthController, :index
+    get("/health", HealthController, :index)
     post("/auth/callback", AuthController, :callback)
     post("/search", SearchController, :index)
     # Accept all methods on /common or anything under /common/*

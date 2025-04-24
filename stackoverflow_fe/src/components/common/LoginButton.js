@@ -1,9 +1,6 @@
 // src/components/LoginButton.js
 import React from "react";
-import {
-  generateCodeVerifier,
-  generateCodeChallenge,
-} from "../auth/pkceUtils";
+import { generateCodeVerifier, generateCodeChallenge } from "../auth/pkceUtils";
 import { Button } from "@mui/material";
 
 export default function LoginButton() {
@@ -26,6 +23,8 @@ export default function LoginButton() {
   };
 
   return (
-    <Button variant="contained" onClick={loginWithStackExchange}>Login</Button>
+    <Button variant="contained" onClick={loginWithStackExchange}>
+      Login
+    </Button>
   );
 }

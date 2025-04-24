@@ -12,7 +12,10 @@ function CacheSettings({ sx }) {
   }, []);
 
   const handleBackendCacheChange = (e) => {
-    localStorage.setItem("backendCacheEnabled", e.target.checked ? "true" : "false");
+    localStorage.setItem(
+      "backendCacheEnabled",
+      e.target.checked ? "true" : "false",
+    );
     setBackendCache(e.target.checked);
   };
 
@@ -28,12 +31,9 @@ function CacheSettings({ sx }) {
           <Switch checked={backendCache} onChange={handleBackendCacheChange} />
         }
         label="Enable Backend Cache"
-
       />
       <FormControlLabel
-        control={
-          <Switch checked={rerank} onChange={handleRerankChange} />
-        }
+        control={<Switch checked={rerank} onChange={handleRerankChange} />}
         label="Enable Rerank"
       />
     </Box>

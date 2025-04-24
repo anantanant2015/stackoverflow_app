@@ -1,14 +1,21 @@
 import { useState } from "react";
-import { Box, TextField, Paper, Typography, Button, Link, Grid } from "@mui/material";
-import PropTypes from 'prop-types';
-
+import {
+  Box,
+  TextField,
+  Paper,
+  Typography,
+  Button,
+  Link,
+  Grid,
+} from "@mui/material";
+import PropTypes from "prop-types";
 
 export default function SearchInputWithHints({
   value,
   onChange,
   onKeyDown,
   placeholder = "Search StackOverflow...",
-  label = "Search StackOverflow..."
+  label = "Search StackOverflow...",
 }) {
   const [focused, setFocused] = useState(false);
 
@@ -45,7 +52,12 @@ export default function SearchInputWithHints({
                   ['collective:"Name"', "collective content"],
                 ].map(([code, desc], idx) => (
                   <Box key={idx} mb={1}>
-                    <Typography component="span" fontFamily="monospace" fontWeight="bold" mr={1}>
+                    <Typography
+                      component="span"
+                      fontFamily="monospace"
+                      fontWeight="bold"
+                      mr={1}
+                    >
                       {code}
                     </Typography>
                     <Typography component="span" color="text.secondary">
@@ -62,7 +74,12 @@ export default function SearchInputWithHints({
                   ["isaccepted:yes", "search within status"],
                 ].map(([code, desc], idx) => (
                   <Box key={idx} mb={1}>
-                    <Typography component="span" fontFamily="monospace" fontWeight="bold" mr={1}>
+                    <Typography
+                      component="span"
+                      fontFamily="monospace"
+                      fontWeight="bold"
+                      mr={1}
+                    >
                       {code}
                     </Typography>
                     <Typography component="span" color="text.secondary">
@@ -84,7 +101,12 @@ export default function SearchInputWithHints({
               <Button size="small" variant="contained" href="/questions/ask">
                 Ask a question
               </Button>
-              <Link href="https://stackoverflow.com/help/searching" target="_blank" underline="hover" fontSize="0.875rem">
+              <Link
+                href="https://stackoverflow.com/help/searching"
+                target="_blank"
+                underline="hover"
+                fontSize="0.875rem"
+              >
                 Search help
               </Link>
             </Box>
@@ -104,7 +126,7 @@ SearchInputWithHints.propTypes = {
 };
 
 SearchInputWithHints.defaultProps = {
-  onKeyDown: () => { },
-  placeholder: 'Search StackOverflow...',
-  label: 'Search StackOverflow...',
+  onKeyDown: () => {},
+  placeholder: "Search StackOverflow...",
+  label: "Search StackOverflow...",
 };
