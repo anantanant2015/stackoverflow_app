@@ -3,22 +3,21 @@ FROM ubuntu:20.04
 # Set non-interactive mode for apt
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install dependencies and Ollama, clean up cache
+# Install required packages and Ollama
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl sudo bash ca-certificates && \
-    curl -fsSL https://ollama.com/install.sh | bash && \
+    apt-get install -y --no-install-recommends curl sudo ca-certificates bash && \
+    rm -rf /root/.ollama && \
+    curl -fsSL https://ollama.com/install.sh | sh && \
     rm -rf /var/lib/apt/lists/*
 
 # Add Ollama to PATH
 ENV PATH="/root/.ollama/bin:${PATH}"
 
-# Default model (can override with env)
+# Default model to pull (can override with env)
 ENV LLM_MODEL=tinyllama
-
-# Optional cleanup flag (true = delete unused models on start)
 ENV OLLAMA_CLEAN_UNUSED_MODELS=false
 
-# Copy entrypoint script
+# Copy entrypoint
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
