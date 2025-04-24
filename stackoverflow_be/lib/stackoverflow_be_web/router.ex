@@ -20,12 +20,12 @@ defmodule StackoverflowBeWeb.Router do
     get("/", PageController, :home)
   end
 
-  scope "/api", StackoverflowBeWeb do
+  scope "/api", StackoverflowBeWeb.Api do
     pipe_through(:api)
-    get("/questions", ApiController, :index)
-    get("/questions/:id/answers", ApiController, :show_answers)
+
     post("/auth/callback", AuthController, :callback)
     get("/search", SearchController, :index)
+    match(:*, "/common", CommonProxyController, :proxy)
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development

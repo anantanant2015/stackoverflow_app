@@ -5,8 +5,7 @@ import axios from "axios";
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000/api/";
 const API_SUFFIX = process.env.REACT_APP_API_SUFFIX || "";
 const SITE = process.env.REACT_APP_SITE || "stackoverflow";
-const CACHE_EXPIRATION =
-  Number(process.env.REACT_APP_CACHE_EXPIRATION) || 720 * 60 * 1000;
+const CACHE_EXPIRATION = Number(process.env.REACT_APP_CACHE_EXPIRATION) || 720 * 60 * 1000; // default 720 min
 const STACKEXCHANGE_KEY = process.env.REACT_APP_STACK_APP_KEY;
 
 if (!STACKEXCHANGE_KEY) throw new Error("Stack App Key is missing.");
@@ -20,6 +19,23 @@ const api = axios.create({
   baseURL: API_BASE_URL,
 });
 
+const isBackendCacheEnabled = () => {
+  try {
+    return localStorage.getItem("backendCacheEnabled") === "true";
+  } catch {
+    return false;
+  }
+};
+
+const isRerankEnabled = () => {
+  try {
+    return localStorage.getItem("rerankEnabled") === "true";
+  } catch {
+    return false;
+  }
+};
+
+
 // Cache helpers
 const getCache = (key) => {
   try {
@@ -28,7 +44,7 @@ const getCache = (key) => {
     const { timestamp, data } = JSON.parse(cached);
     if (Date.now() - timestamp < CACHE_EXPIRATION) return data;
     localStorage.removeItem(key);
-  } catch (_) {
+  } catch {
     localStorage.removeItem(key);
   }
   return null;
@@ -42,36 +58,51 @@ const setCache = (key, data) => {
   }
 };
 
-// Generic API request function
+// Check if cache is enabled in localStorage
+const isCacheEnabled = () => {
+  try {
+    return localStorage.getItem("cacheEnabled") === "true";
+  } catch {
+    return false;
+  }
+};
+
+// Generic API request function using proxy endpoint "/common"
 export const apiRequest = async ({
   method = "GET",
   path,
   params = {},
   data = null,
   cacheKey = null,
+  url = "/common",
 }) => {
   const fullParams = {
     ...params,
     site: SITE,
-    key: STACKEXCHANGE_KEY, // Ensure key is included
+    key: STACKEXCHANGE_KEY,
+    backend_cache: isBackendCacheEnabled(),
+    rerank: isRerankEnabled(),
+    method,
+    path,
   };
 
-  if (cacheKey) {
+  if (cacheKey && isCacheEnabled()) {
     const cached = getCache(cacheKey);
     if (cached) return cached;
   }
 
   try {
     const response = await api.request({
-      url: path,
+      url,
       method,
-      params: fullParams,
-      data,
+      data: fullParams,
     });
 
     const result = response.data.items || response.data;
 
-    if (cacheKey) setCache(cacheKey, result);
+    if (cacheKey && isCacheEnabled()) {
+      setCache(cacheKey, result);
+    }
 
     return result;
   } catch (error) {
@@ -80,7 +111,9 @@ export const apiRequest = async ({
   }
 };
 
-// API endpoints
+
+
+// API endpoint wrappers
 
 export const fetchQuestions = async (params) =>
   apiRequest({
@@ -136,18 +169,17 @@ export const searchQuestions1 = async (query) =>
     cacheKey: `search_${query}`,
   });
 
-// src/api.js
-export async function searchQuestions(params) {
-  const query = new URLSearchParams(params).toString();
-  const res = await fetch(`${API_BASE_URL}/search?${query}`, {
-    credentials: "include",
+export const searchQuestions = async (params) =>
+  apiRequest({
+    method: "GET",
+    path: "/search",
+    params,
+    cacheKey: `search_${JSON.stringify(params)}`,
+    url: "/search",
   });
-  if (!res.ok) throw new Error("Search failed");
-  return await res.json();
-}
 
-export const createQuestion = async ({ title, body, tags, accessToken }) => {
-  return apiRequest({
+export const createQuestion = async ({ title, body, tags, accessToken }) =>
+  apiRequest({
     method: "POST",
     path: "/questions/add",
     params: {
@@ -157,27 +189,24 @@ export const createQuestion = async ({ title, body, tags, accessToken }) => {
       tags: tags.join(","),
     },
   });
-};
 
-export const upvoteQuestion = async (questionId, accessToken) => {
-  return apiRequest({
+export const upvoteQuestion = async (questionId, accessToken) =>
+  apiRequest({
     method: "POST",
     path: `/questions/${questionId}/upvote`,
     params: {
       access_token: accessToken,
     },
   });
-};
 
-export const downvoteQuestion = async (questionId, accessToken) => {
-  return apiRequest({
+export const downvoteQuestion = async (questionId, accessToken) =>
+  apiRequest({
     method: "POST",
     path: `/questions/${questionId}/downvote`,
     params: {
       access_token: accessToken,
     },
   });
-};
 
 export const fetchCommentsOnQuestion = async (questionId) =>
   apiRequest({
@@ -186,12 +215,7 @@ export const fetchCommentsOnQuestion = async (questionId) =>
     cacheKey: `comments_${questionId}`,
   });
 
-export const postCommentToQuestion = async (
-  questionId,
-  body,
-  accessToken,
-  preview = false,
-) => {
+export const postCommentToQuestion = async (questionId, body, accessToken, preview = false) => {
   const token = accessToken || localStorage.getItem("stack_token");
   if (!token) throw new Error("Access token is required to post a comment.");
 
