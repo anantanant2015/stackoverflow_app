@@ -1,5 +1,3 @@
----
-
 # 🚀 Fullstack StackOverflow Clone
 
 [![Docker](https://img.shields.io/badge/docker-ready-blue?logo=docker)](https://www.docker.com/)
@@ -242,5 +240,3 @@ Star ⭐ the repo, fork, open issues, or submit pull requests. Contributions wel
 ## 📄 License
 
 MIT
-
----
