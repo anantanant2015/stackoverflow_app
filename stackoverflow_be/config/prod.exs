@@ -20,11 +20,19 @@ config :logger, level: :info
 # Runtime production configuration, including reading
 # of environment variables, is done on config/runtime.exs.
 
-config :stackoverflow_be, YourAppWeb.Endpoint,
-  url: [host: System.get_env("DOMAIN_NAME"), port: 443], # update your domain here
+config :stackoverflow_be, StackoverflowBeWeb.Endpoint,
+  url: [host: System.get_env("DOMAIN_NAME") || "yourdomain.com", port: 443],
   https: [
     port: 443,
     cipher_suite: :strong,
     keyfile: System.get_env("SSL_KEY_PATH"),
     certfile: System.get_env("SSL_CERT_PATH")
   ]
+
+config :stackoverflow_be, StackoverflowBe.Repo,
+  username: System.get_env("DB_USERNAME"),
+  password: System.get_env("DB_PASSWORD"),
+  hostname: System.get_env("DB_HOST"),
+  database: System.get_env("DB_NAME"),
+  pool_size: String.to_integer(System.get_env("POOL_SIZE", "10")),
+  port: String.to_integer(System.get_env("DB_PORT", "5432"))

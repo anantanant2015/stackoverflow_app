@@ -1,12 +1,30 @@
-
 # 🚀 Fullstack StackOverflow Clone
 
-This project includes:
+[![Docker](https://img.shields.io/badge/docker-ready-blue?logo=docker)](https://www.docker.com/)
+[![Phoenix](https://img.shields.io/badge/phoenix-1.7.10-red?logo=elixir)](https://www.phoenixframework.org/)
+[![React](https://img.shields.io/badge/react-frontend-61DAFB?logo=react)](https://react.dev/)
+[![PostgreSQL](https://img.shields.io/badge/postgresql-database-336791?logo=postgresql)](https://www.postgresql.org/)
+[![OpenAI](https://img.shields.io/badge/OpenAI-API-black?logo=openai)](https://openai.com/)
+[![Ollama](https://img.shields.io/badge/Ollama-LLM-4B5563?logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTIiIGZpbGw9IiM0QjU1NjMiLz48L3N2Zz4=)
+[![CI/CD](https://img.shields.io/github/actions/workflow/status/your-org/your-repo/deploy.yml?label=ci%2Fcd&logo=github)](./.github/workflows/deploy.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 
-- ⚙️ Phoenix (Elixir) backend (`stackoverflow_be`)
-- 💻 React frontend (`stackoverflow_fe`)
-- 🐳 Docker/Docker Compose setup for dev and prod
-- 🔐 SSL, CORS, environment configs for production
+---
+
+## 📚 Table of Contents
+
+- [📦 Project Structure](#-project-structure)
+- [⚙️ Development Setup](#️-development-setup)
+- [🚀 Using the Makefile](#-using-the-makefile)
+- [⚙️ Manual Script Usage (Optional)](#️-manual-script-usage-optional)
+- [🔐 SSL & CORS Configuration](#-ssl--cors-configuration)
+- [🌐 Frontend Proxy (Nginx Config)](#-frontend-proxy-nginx-config)
+- [🔁 CI/CD via GitHub Actions](#-cicd-via-github-actions)
+- [🌍 Suggested Free Deployment](#-suggested-free-deployment)
+- [💡 Useful Developer Commands](#-useful-developer-commands)
+- [✅ Features Recap](#-features-recap)
+- [🙌 Contributing](#-contributing)
+- [📄 License](#-license)
 
 ---
 
@@ -15,15 +33,18 @@ This project includes:
 ```
 .
 ├── stackoverflow_be/         # Phoenix backend
-│   ├── Dockerfile
-│   └── .env.production
 ├── stackoverflow_fe/         # React frontend
-│   ├── Dockerfile
-│   ├── nginx.conf
-│   └── .env.production
-├── docker-compose.yml        # Dev environment
-├── docker-compose.prod.yml   # Production deployment
-├── .github/workflows/        # GitHub Actions CI/CD
+├── docker-compose.yml        # Common base Compose config
+├── docker-compose.prod.yml   # Production overrides
+├── .env                      # Dev environment config
+├── .env.prod                 # Production config
+├── scripts/                  # Utility shell scripts
+│   ├── generate-env.sh       # Interactive .env file generator
+│   ├── validate-env.sh       # Validates .env content
+│   ├── docker-setup.sh       # Verifies Docker Desktop is installed & running
+│   ├── start-server.sh       # Entrypoint for ENV=dev|prod
+│   └── Makefile              # Recommended interface
+└── .github/workflows/        # CI/CD pipeline (GitHub Actions)
 ```
 
 ---
@@ -32,79 +53,82 @@ This project includes:
 
 ### 🔧 Prerequisites
 
-- [Docker](https://www.docker.com/products/docker-desktop)
-- [Docker Compose](https://docs.docker.com/compose/)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop)
+- (Optional) `make` installed (`brew install make` or `sudo apt install make`)
 
-### ▶️ Start Dev Environment
+---
+
+## 🚀 Using the Makefile
+
+The `Makefile` provides an **automated, zero-config** experience for dev and prod environments.
+
+### ▶️ Launch Environments
 
 ```bash
-docker-compose up --build
+make -f scripts/Makefile up                # Starts development stack
+make -f scripts/Makefile up ENV=prod       # Starts production stack
 ```
 
-- Backend → http://localhost:4000  
-- Frontend → http://localhost:3000  
+### 🛠 Behind the Scenes
 
-> Frontend proxies `/api/*` to backend.
+- Validates `.env` / `.env.prod` and generates if missing
+- Confirms Docker is available and running
+- Starts correct `docker-compose` setup
+
+> ✅ **Run from the project root**, always using `-f scripts/Makefile`.
 
 ---
 
-## 🚀 Production Deployment
+## ⚙️ Manual Script Usage (Optional)
 
-### 📁 1. Environment Files
+Useful if not using `make` or want fine-grained control.
 
-#### `stackoverflow_be/.env.production`
-
-```env
-MIX_ENV=prod
-DATABASE_URL=ecto://postgres:postgres@db/prod_db
-SECRET_KEY_BASE=YOUR_SECRET_KEY
-SSL_CERT_PATH=/certs/fullchain.pem
-SSL_KEY_PATH=/certs/privkey.pem
-```
-
-#### `stackoverflow_fe/.env.production`
-
-```env
-REACT_APP_API_URL=https://yourdomain.com/api
-```
-
-> Generate `SECRET_KEY_BASE` using:
-> ```bash
-> mix phx.gen.secret
-> ```
-
----
-
-### 🛠 2. Build Production Images
+### 1. Generate Env Files
 
 ```bash
-docker-compose -f docker-compose.prod.yml up --build
+./scripts/generate-env.sh
 ```
 
-- Serves React app via Nginx on port `80`
-- Phoenix API runs on port `4000`
-- PostgreSQL DB persists via Docker volume
+Creates or overwrites:
+- `.env` (for dev)
+- `.env.prod` (for prod)
+
+### 2. Validate Env Files
+
+```bash
+./scripts/validate-env.sh .env
+./scripts/validate-env.sh .env.prod
+```
+
+### 3. Start Server Manually
+
+```bash
+ENV=dev ./scripts/start-server.sh
+ENV=prod ./scripts/start-server.sh
+```
 
 ---
 
-## 🔐 SSL & CORS
+## 🔐 SSL & CORS Configuration
 
-### ✅ CORS in Phoenix (`endpoint.ex`)
+### ✅ CORS (`endpoint.ex`)
 
 ```elixir
 plug CORSPlug, origin: ["http://localhost:3000", "https://yourdomain.com"]
 ```
 
-Add to `mix.exs`:
+Install:
 
 ```elixir
 {:cors_plug, "~> 3.0"}
 ```
 
-### ✅ SSL in `config/prod.exs`
+---
+
+### ✅ SSL Setup (`config/prod.exs`)
 
 ```elixir
-config :your_app, YourAppWeb.Endpoint,
+config :stackoverflow_be, StackoverflowBeWeb.Endpoint,
   url: [host: "yourdomain.com", port: 443],
   https: [
     port: 443,
@@ -114,11 +138,24 @@ config :your_app, YourAppWeb.Endpoint,
   ]
 ```
 
+### 🧪 Dev SSL Certificate Generation
+
+```bash
+make -f scripts/Makefile generate-certs
+```
+
+Add these to your `.env` or `.env.prod`:
+
+```env
+SSL_CERT_PATH=certs/cert.pem
+SSL_KEY_PATH=certs/key.pem
+```
+
 ---
 
-## 🌐 Nginx Config (React Frontend)
+## 🌐 Frontend Proxy (Nginx Config)
 
-Create `stackoverflow_fe/nginx.conf`:
+Inside `stackoverflow_fe/nginx.conf`:
 
 ```nginx
 server {
@@ -145,51 +182,58 @@ server {
 
 ---
 
-## 🔁 CI/CD (GitHub Actions)
+## 🔁 CI/CD via GitHub Actions
 
-See `.github/workflows/deploy.yml` to:
+Workflow: `.github/workflows/deploy.yml`
 
-- Build Docker images on push to `main`
-- Push to Docker Hub (credentials via GitHub Secrets)
-
----
-
-## 🌍 Free Deployment Suggestion
-
-Use **[Render](https://render.com/)**:
-
-- Backend → Web Service (Docker)
-- Frontend → Static Site
-- Database → PostgreSQL (Render Add-on)
+- Auto builds Docker images
+- Pushes to registry (if configured)
+- Deploys based on branch and secret setup
 
 ---
 
-## 🧪 Useful Commands
+## 🌍 Suggested Free Deployment
 
-### Generate a Release (Backend)
+**Recommended**: [Render](https://render.com/)
+
+- Backend: Docker → Web Service
+- Frontend: Static Site (with custom Nginx if needed)
+- Database: PostgreSQL via Render or Docker volume
+
+---
+
+## 💡 Useful Developer Commands
+
 ```bash
-MIX_ENV=prod mix release
+make -f scripts/Makefile up                 # Start stack (default: dev)
+make -f scripts/Makefile up ENV=prod        # Start stack (prod)
+make -f scripts/Makefile down               # Stop stack
+docker-compose ps                           # Inspect container state
 ```
 
-### Phoenix Migrations
+### Running Migrations
+
 ```bash
 docker-compose exec backend mix ecto.migrate
 ```
 
 ---
 
-## ✅ What's Included
+## ✅ Features Recap
 
-- ✅ Clean Docker images
-- ✅ Secure production configs
-- ✅ Auto-retry services with `depends_on`
-- ✅ Volume-based DB persistence
+- ✅ Phoenix + React fullstack architecture
+- ✅ Docker-first setup with `.env` generation & validation
+- ✅ SSL and CORS support
+- ✅ LLM support: OpenAI or local Ollama
+- ✅ PostgreSQL + CI/CD + Nginx frontend proxy
+- ✅ SSO login, query & result caching
+- ✅ One-command setup using `Makefile`
 
 ---
 
 ## 🙌 Contributing
 
-Feel free to fork, improve, and PR! For major changes, open an issue to discuss your proposal.
+Star ⭐ the repo, fork, open issues, or submit pull requests. Contributions welcome!
 
 ---
 

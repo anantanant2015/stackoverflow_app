@@ -1,5 +1,5 @@
-defmodule StackoverflowBeWeb.ApiController do
-  use Web, :controller
+defmodule StackoverflowBeWeb.Api.ApiController do
+  use StackoverflowBeWeb, :controller
   alias StackoverflowBe.API, as: StackOverflowAPI
   alias StackoverflowBe.OpenAIClient
 

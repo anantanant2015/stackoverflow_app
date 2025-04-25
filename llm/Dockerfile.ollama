@@ -1,0 +1,24 @@
+FROM ubuntu:20.04
+
+# Set non-interactive mode for apt
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install required packages and Ollama
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl sudo ca-certificates bash && \
+    rm -rf /root/.ollama && \
+    curl -fsSL https://ollama.com/install.sh | sh && \
+    rm -rf /var/lib/apt/lists/*
+
+# Add Ollama to PATH
+ENV PATH="/root/.ollama/bin:${PATH}"
+
+# Default model to pull (can override with env)
+ENV LLM_MODEL=tinyllama
+ENV OLLAMA_CLEAN_UNUSED_MODELS=false
+
+# Copy entrypoint
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

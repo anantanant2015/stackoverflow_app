@@ -1,0 +1,67 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up asdf
+        uses: asdf-vm/actions/setup@v2
+
+      - name: Install Erlang and Elixir
+        run: |
+          asdf plugin add erlang || true
+          asdf plugin add elixir || true
+          asdf install erlang 27.0
+          asdf install elixir 1.18.3
+          asdf global erlang 27.0
+          asdf global elixir 1.18.3
+          mix local.hex --force
+          mix local.rebar --force
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix-
+
+      - name: Install backend dependencies
+        run: mix deps.get
+
+      - name: Install frontend dependencies
+        run: npm install --prefix ./frontend
+
+      - name: Run backend tests
+        run: mix test
+
+      - name: Run frontend tests
+        run: npm run test --prefix ./frontend
+
+      - name: Build Docker images
+        run: docker-compose -f docker-compose.prod.yml build
+
+      - name: Notify Success
+        if: success()
+        run: echo "✅ CI Build and Tests succeeded!"
+
+      - name: Notify Failure
+        if: failure()
+        run: echo "❌ CI Build or Tests failed."

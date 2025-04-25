@@ -19,8 +19,10 @@ services:
       MIX_ENV: prod
       DATABASE_URL: ecto://postgres:postgres@db/prod_db
       SECRET_KEY_BASE: your_prod_secret
+      LLM_API_URL: http://llm:11434/api/generate
     depends_on:
       - db
+      - llm
 
   frontend:
     build:
@@ -28,8 +30,28 @@ services:
       dockerfile: Dockerfile
     ports:
       - "80:80"
+    environment:
+      REACT_APP_API_URL: ${REACT_APP_API_URL}
+      REACT_APP_SITE: ${REACT_APP_SITE}
+      REACT_APP_CACHE_EXPIRATION: ${REACT_APP_CACHE_EXPIRATION}
     depends_on:
       - backend
 
+  llm:
+    image: ollama/ollama
+    container_name: local_llm
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    command: >
+      sh -c "
+        /bin/ollama serve &
+        sleep 2 &&
+        ollama pull ${LLM_MODEL:-tinyllama} &&
+        tail -f /dev/null"
+    restart: unless-stopped
+
 volumes:
   db_data:
+  ollama_models:

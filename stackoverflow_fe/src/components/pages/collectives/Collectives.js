@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { fetchCollectives } from '../../../api';
-import { Box, Typography, List, ListItem, ListItemText, Paper } from '@mui/material';
-import CollectivesCard from './CollectivesCard';
+import React, { useEffect, useState } from "react";
+import { fetchCollectives } from "../../../api";
+import { Box, Typography, Paper } from "@mui/material";
+import CollectivesCard from "./CollectivesCard";
 
 const Collectives = () => {
   const [collectives, setCollectives] = useState([]);
 
   useEffect(() => {
-    fetchCollectives().then(data => setCollectives(data || []));
+    fetchCollectives().then((data) => setCollectives(data || []));
   }, []);
 
   return (

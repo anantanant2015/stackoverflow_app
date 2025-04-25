@@ -1,66 +1,56 @@
-import React from 'react';
-import {
-  Box,
-  Grid,
-  Typography,
-  Avatar,
-  Chip,
-  Stack,
-  Link,
-} from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import DOMPurify from 'dompurify';
+import React from "react";
+import { Box, Typography, Avatar, Chip, Stack, Link } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import DOMPurify from "dompurify";
+import PropTypes from "prop-types";
 
 export default function QuestionSummary({ question }) {
   const navigate = useNavigate();
-  const {
-    score,
-    answer_count,
-    view_count,
-    title,
-    tags,
-    owner,
-    creation_date,
-    link,
-  } = question;
+  const { score, view_count, title, tags, owner, creation_date } = question;
 
   const creationTime = new Date(creation_date * 1000).toLocaleString();
-  const reputation = owner?.reputation?.toLocaleString() ?? '0';
+  const reputation = owner?.reputation?.toLocaleString() ?? "0";
 
   const truncateHTML = (html, maxLength) => {
-    const tempDiv = document.createElement('div');
+    const tempDiv = document.createElement("div");
     tempDiv.innerHTML = html;
-    const text = tempDiv.textContent || tempDiv.innerText || '';
-    const truncated = text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
+    const text = tempDiv.textContent || tempDiv.innerText || "";
+    const truncated =
+      text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
     return DOMPurify.sanitize(truncated);
   };
-
-
 
   return (
     <Box
       sx={{
-        borderTop: '1px solid #ddd',
-        borderRight: 'none',
+        borderTop: "1px solid #ddd",
+        borderRight: "none",
         borderRadius: 1,
         padding: 2,
         marginBottom: 2,
-        backgroundColor: '#fff',
+        backgroundColor: "#fff",
       }}
     >
       {/* Top-level layout */}
       <Box
         sx={{
-          display: 'flex',
+          display: "flex",
           gap: 2,
-          alignItems: 'flex-start',
-          flexWrap: 'nowrap',
+          alignItems: "flex-start",
+          flexWrap: "nowrap",
         }}
       >
         {/* Left column: votes/answers/views */}
-        <Box sx={{ fontSize: '31.02px', minWidth: '80px', textAlign: 'right', flexShrink: 0 }}>
+        <Box
+          sx={{
+            fontSize: "31.02px",
+            minWidth: "80px",
+            textAlign: "right",
+            flexShrink: 0,
+          }}
+        >
           <Stack spacing={0.5}>
-            <Typography variant="body2" >
+            <Typography variant="body2">
               <strong>{score}</strong> votes
             </Typography>
             <Typography
@@ -68,26 +58,26 @@ export default function QuestionSummary({ question }) {
               sx={{
                 ...(question.accepted_answer_id
                   ? {
-                    backgroundColor: 'green',
-                    color: 'white',
-                    borderRadius: '4px',
-                    padding: '2px 6px',
-                  }
+                      backgroundColor: "green",
+                      color: "white",
+                      borderRadius: "4px",
+                      padding: "2px 6px",
+                    }
                   : question.is_answered
                     ? {
-                      border: '1px solid green',
-                      color: 'green',
-                      borderRadius: '4px',
-                      padding: '2px 6px',
-                    }
+                        border: "1px solid green",
+                        color: "green",
+                        borderRadius: "4px",
+                        padding: "2px 6px",
+                      }
                     : {
-                      color: 'text.secondary',
-                    }),
+                        color: "text.secondary",
+                      }),
               }}
             >
               <strong>{question.answer_count}</strong> answers
             </Typography>
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            <Typography variant="body2" sx={{ color: "text.secondary" }}>
               <strong>{view_count}</strong> views
             </Typography>
           </Stack>
@@ -96,7 +86,12 @@ export default function QuestionSummary({ question }) {
         {/* Right column: question content */}
         <Box sx={{ flexGrow: 1 }}>
           {/* Title */}
-          <Typography variant="h6" component="h3" gutterBottom sx={{ fontSize: '1rem' }}>
+          <Typography
+            variant="h6"
+            component="h3"
+            gutterBottom
+            sx={{ fontSize: "1rem" }}
+          >
             <Link
               onClick={() => navigate(`/question/${question.question_id}`)}
               underline="hover"
@@ -109,32 +104,45 @@ export default function QuestionSummary({ question }) {
           </Typography>
 
           {/* Description */}
-          <Typography variant="body2" sx={{ fontSize: '0.75rem', height: '100%', boxSizing: 'border-box', color: 'text.primary', mb: 1, maxWidth: '100%', overflow: 'scroll' }} dangerouslySetInnerHTML={{ __html: truncateHTML(question.body, 200) }}>
-          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              fontSize: "0.75rem",
+              height: "100%",
+              boxSizing: "border-box",
+              color: "text.primary",
+              mb: 1,
+              maxWidth: "100%",
+              overflow: "scroll",
+            }}
+            dangerouslySetInnerHTML={{
+              __html: truncateHTML(question.body, 200),
+            }}
+          ></Typography>
 
           {/* Tags and User Info */}
           <Box
             sx={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              maxWidth: '60%'
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              maxWidth: "60%",
             }}
           >
             {/* Tags */}
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
               {tags.map((tag) => (
                 <Chip
                   key={tag}
                   label={tag}
                   size="small"
                   sx={{
-                    borderRadius: '4px',
+                    borderRadius: "4px",
                     height: 24,
-                    fontSize: '0.75rem',
+                    fontSize: "0.75rem",
                     px: 1,
-                    textTransform: 'lowercase',
-                    fontWeight: 'bold'
+                    textTransform: "lowercase",
+                    fontWeight: "bold",
                   }}
                 />
               ))}
@@ -146,9 +154,9 @@ export default function QuestionSummary({ question }) {
             {/* User Info */}
             <Box
               sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyItems: 'right',
+                display: "flex",
+                alignItems: "center",
+                justifyItems: "right",
                 gap: 1,
                 mt: { xs: 1, sm: 0 },
               }}
@@ -158,7 +166,7 @@ export default function QuestionSummary({ question }) {
                 alt={owner?.display_name}
                 sx={{ width: 20, height: 20 }}
               />
-              <Typography variant="body2" sx={{ whiteSpace: 'nowrap' }}>
+              <Typography variant="body2" sx={{ whiteSpace: "nowrap" }}>
                 <Link
                   href={owner?.link}
                   target="_blank"
@@ -166,8 +174,8 @@ export default function QuestionSummary({ question }) {
                   underline="hover"
                 >
                   {owner?.display_name}
-                </Link>{' '}
-                <span style={{ color: '#999' }}>
+                </Link>{" "}
+                <span style={{ color: "#999" }}>
                   {reputation} • asked {creationTime}
                 </span>
               </Typography>
@@ -178,3 +186,25 @@ export default function QuestionSummary({ question }) {
     </Box>
   );
 }
+
+QuestionSummary.propTypes = {
+  question: PropTypes.shape({
+    score: PropTypes.number,
+    answer_count: PropTypes.number,
+    view_count: PropTypes.number,
+    title: PropTypes.string,
+    tags: PropTypes.arrayOf(PropTypes.string),
+    body: PropTypes.string,
+    link: PropTypes.string,
+    question_id: PropTypes.number,
+    creation_date: PropTypes.number,
+    is_answered: PropTypes.bool,
+    accepted_answer_id: PropTypes.number,
+    owner: PropTypes.shape({
+      reputation: PropTypes.number,
+      profile_image: PropTypes.string,
+      display_name: PropTypes.string,
+      link: PropTypes.string,
+    }),
+  }).isRequired,
+};

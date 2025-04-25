@@ -1,6 +1,6 @@
 // CreateQuestion.js
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Box,
   Button,
@@ -9,15 +9,16 @@ import {
   CircularProgress,
   Alert,
   Autocomplete,
-  Stack
-} from '@mui/material';
+  Stack,
+} from "@mui/material";
+import PropTypes from "prop-types";
 
-const API_KEY = 'YOUR_STACKAPPS_KEY';
+const API_KEY = "YOUR_STACKAPPS_KEY";
 
 const CreateQuestion = ({ accessToken }) => {
-  const [title, setTitle] = useState('');
-  const [body, setBody] = useState('');
-  const [tagInput, setTagInput] = useState('');
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [tagInput, setTagInput] = useState("");
   const [selectedTags, setSelectedTags] = useState([]);
   const [suggestedTags, setSuggestedTags] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -27,18 +28,18 @@ const CreateQuestion = ({ accessToken }) => {
     const fetchTags = async () => {
       if (tagInput.length < 2) return;
       try {
-        const res = await axios.get('https://api.stackexchange.com/2.3/tags', {
+        const res = await axios.get("https://api.stackexchange.com/2.3/tags", {
           params: {
-            order: 'desc',
-            sort: 'popular',
+            order: "desc",
+            sort: "popular",
             inname: tagInput,
-            site: 'stackoverflow',
-            key: API_KEY
-          }
+            site: "stackoverflow",
+            key: API_KEY,
+          },
         });
-        setSuggestedTags(res.data.items.map(item => item.name));
+        setSuggestedTags(res.data.items.map((item) => item.name));
       } catch (error) {
-        console.error('Tag fetch error', error);
+        console.error("Tag fetch error", error);
       }
     };
     fetchTags();
@@ -46,7 +47,10 @@ const CreateQuestion = ({ accessToken }) => {
 
   const handleSubmit = async () => {
     if (!title.trim() || !body.trim() || selectedTags.length === 0) {
-      setMessage({ type: 'error', text: 'All fields including at least one tag are required.' });
+      setMessage({
+        type: "error",
+        text: "All fields including at least one tag are required.",
+      });
       return;
     }
 
@@ -54,26 +58,30 @@ const CreateQuestion = ({ accessToken }) => {
     setMessage(null);
 
     try {
-      const response = await axios.post('https://api.stackexchange.com/2.3/questions/add', null, {
-        params: {
-          key: API_KEY,
-          access_token: accessToken,
-          site: 'stackoverflow',
-          title,
-          body,
-          tags: selectedTags.join(','),
+      await axios.post(
+        "https://api.stackexchange.com/2.3/questions/add",
+        null,
+        {
+          params: {
+            key: API_KEY,
+            access_token: accessToken,
+            site: "stackoverflow",
+            title,
+            body,
+            tags: selectedTags.join(","),
+          },
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
         },
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      });
+      );
 
-      setMessage({ type: 'success', text: 'Question created successfully!' });
-      setTitle('');
-      setBody('');
+      setMessage({ type: "success", text: "Question created successfully!" });
+      setTitle("");
+      setBody("");
       setSelectedTags([]);
     } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to create question.' });
+      setMessage({ type: "error", text: "Failed to create question." });
     } finally {
       setLoading(false);
     }
@@ -108,19 +116,29 @@ const CreateQuestion = ({ accessToken }) => {
           inputValue={tagInput}
           onInputChange={(e, newInputValue) => setTagInput(newInputValue)}
           renderInput={(params) => (
-            <TextField {...params} label="Tags (min. 1 required)" placeholder="Add tags" />
+            <TextField
+              {...params}
+              label="Tags (min. 1 required)"
+              placeholder="Add tags"
+            />
           )}
         />
-        <Button variant="contained" onClick={handleSubmit} disabled={loading || !accessToken}>
-          {loading ? <CircularProgress size={20} /> : 'Submit Question'}
+        <Button
+          variant="contained"
+          onClick={handleSubmit}
+          disabled={loading || !accessToken}
+        >
+          {loading ? <CircularProgress size={20} /> : "Submit Question"}
         </Button>
 
-        {message && (
-          <Alert severity={message.type}>{message.text}</Alert>
-        )}
+        {message && <Alert severity={message.type}>{message.text}</Alert>}
       </Stack>
     </Box>
   );
+};
+
+CreateQuestion.propTypes = {
+  accessToken: PropTypes.string.isRequired, // or PropTypes.string if optional
 };
 
 export default CreateQuestion;
