@@ -23,6 +23,7 @@ defmodule StackoverflowBeWeb.Router do
   scope "/api", StackoverflowBeWeb do
     pipe_through :api
     get "/questions", ApiController, :index
+    get "/questions/:id/answers", ApiController, :show_answers
   end
 
 
