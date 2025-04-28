@@ -20,10 +20,11 @@ defmodule StackoverflowBeWeb.Router do
     get "/", PageController, :home
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", StackoverflowBeWeb do
-  #   pipe_through :api
-  # end
+  scope "/api", StackoverflowBeWeb do
+    pipe_through :api
+    get "/questions", ApiController, :index
+  end
+
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
   if Application.compile_env(:stackoverflow_be, :dev_routes) do
